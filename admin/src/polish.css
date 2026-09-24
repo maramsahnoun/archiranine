@@ -2,8 +2,8 @@
 @media(max-width:900px){.login-page{grid-template-columns:1fr;gap:22px;padding:86px 24px 55px}.login-story{min-height:260px;padding:25px;border-radius:14px}.login-story .login-brand{display:none}.login-story h1{font-size:34px;margin:10px 0}.login-story p{font-size:12px;margin-bottom:27px}.story-foot{bottom:15px;font-size:8px}.login-card{justify-self:center;max-width:560px;padding:27px}.login-brand{left:24px;top:20px}.login-footer{display:none}}
 @media(max-width:680px){.admin-content{padding:20px 14px}.metric{min-height:86px;padding:12px}.panel{padding:14px}.admin-bar{height:58px}.demo-banner{margin:10px 12px 0}.login-page{padding:78px 15px 28px}.login-story{min-height:210px}.login-card{padding:22px;border-radius:12px}.login-card h1{font-size:25px}}
 /* Crop the supplied logo down to its architectural mark and key out the JPG checkerboard. */
-.brand-logo-crop{position:relative;display:inline-block;flex:none;width:30px;height:30px;overflow:hidden;vertical-align:middle}
-.brand-logo-crop>img{position:absolute!important;left:-49px;top:-10px;width:125px!important;max-width:none!important;height:auto!important;filter:url(#archiranine-blue-key)}
-.brand-logo-filter{position:absolute;width:0;height:0;overflow:hidden}
+.brand-logo-crop{position:relative;display:inline-block;flex:none;width:34px;height:34px;overflow:hidden;vertical-align:middle}
+.brand-logo-crop>img{position:absolute!important;left:-45px;top:-10px;width:125px!important;max-width:none!important;height:auto!important}
+
 .login-brand .brand-logo-crop{width:34px;height:34px}
-.side-brand .brand-logo-crop{width:30px;height:30px}
+.side-brand .brand-logo-crop{width:34px;height:34px}

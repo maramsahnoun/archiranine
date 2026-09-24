@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Routes, Route, Link, useNavigate, useParams } from "react-router-dom";
+import { Routes, Route, Link, useNavigate, useParams, useLocation } from "react-router-dom";
 import {
   Search,
   ArrowRight,
@@ -231,7 +231,7 @@ function Projects() {
     </section>
   );
 }
-function Detail() {
+function Detail({ siteName = "Archirani" }) {
   const { slug } = useParams(),
     [data, setData] = useState(null),
     [error, setError] = useState(""),
@@ -243,7 +243,7 @@ function Detail() {
       .then((p) => {
         if (!live) return;
         setData(p);
-        document.title = `${p.title} — Archirani`;
+        document.title = `${p.title} — ${siteName}`;
         document.querySelector('meta[name="description"]')?.setAttribute("content", p.shortDescription || p.description?.slice(0, 155) || p.title);
         document.querySelector('link[rel="canonical"]')?.setAttribute("href", window.location.href);
         document.querySelector('meta[property="og:title"]')?.setAttribute("content", p.title);
@@ -255,9 +255,9 @@ function Detail() {
         else setError(e.response?.data?.message || "Impossible de charger ce projet.");
       });
     return () => { live = false; };
-  }, [slug]);
+  }, [slug, siteName]);
   useEffect(() => () => {
-    document.title = "Archirani — Des maisons qui inspirent";
+    document.title = `${siteName} — Des maisons qui inspirent`;
     document.querySelector('link[rel="canonical"]')?.setAttribute("href", window.location.origin);
   }, []);
   if (notFound) return <NotFound />;
@@ -415,7 +415,15 @@ function NotFound() {
 }
 export default function App() {
   const [settings,setSettings]=useState({siteName:"Archirani",companyEmail:"",companyPhone:"",companyAddress:"",linkedinUrl:"",instagramUrl:"",facebookUrl:""});
+  const location=useLocation();
   useEffect(()=>{let alive=true;request(api.get("/settings")).then(data=>alive&&setSettings(data)).catch(()=>{});return()=>{alive=false}},[]);
+  useEffect(()=>{
+    if(/^\/projects\/[^/]+/.test(location.pathname))return;
+    const name=settings.siteName||"Archirani";
+    document.title=`${name} — Des maisons qui inspirent`;
+    document.querySelector('meta[property="og:site_name"]')?.setAttribute("content",name);
+    document.querySelector('meta[property="og:title"]')?.setAttribute("content",`${name} — Des maisons qui inspirent`);
+  },[settings.siteName,location.pathname]);
   return (
     <>
       <Header settings={settings} />
@@ -423,7 +431,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/projects" element={<Projects />} />
-        <Route path="/projects/:slug" element={<Detail />} />
+        <Route path="/projects/:slug" element={<Detail siteName={settings.siteName} />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact settings={settings} />} />
         <Route path="*" element={<NotFound />} />

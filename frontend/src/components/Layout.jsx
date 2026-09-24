@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { Link, NavLink } from "react-router-dom";
-import { Facebook, Instagram, Linkedin } from "lucide-react";
+import { Link, NavLink, useLocation } from "react-router-dom";
+import { Facebook, Instagram, Linkedin, Menu, X } from "lucide-react";
 import BrandMark from "./BrandMark.jsx";
 function safeProfileUrl(value) {
   try {
@@ -13,17 +13,23 @@ function safeProfileUrl(value) {
 export function DemoNotice(){const[active,setActive]=useState(()=>Boolean(window.__ARCHIHOME_DEMO__));useEffect(()=>{const activate=()=>setActive(true);window.addEventListener('archihome:demo',activate);return()=>window.removeEventListener('archihome:demo',activate)},[]);return active?<div className="demo-notice">Mode démo local — l’API MySQL est indisponible. Les modifications ne sont pas enregistrées.</div>:null}
 export function Header({ settings }) {
   const siteName = settings?.siteName || "Archirani";
+  const [menuOpen, setMenuOpen] = useState(false);
+  const location = useLocation();
+  useEffect(() => setMenuOpen(false), [location.pathname]);
   return (
-    <header className="topbar">
+    <header className={`topbar${menuOpen ? " menu-open" : ""}`}>
       <Link className="brand" to="/">
         <BrandMark />
         {siteName}
       </Link>
-      <nav>
-        <NavLink to="/">Accueil</NavLink>
-        <NavLink to="/projects">Projets</NavLink>
+      <button className="mobile-nav-toggle" type="button" aria-label={menuOpen ? "Fermer le menu" : "Ouvrir le menu"} aria-expanded={menuOpen} aria-controls="public-navigation" onClick={() => setMenuOpen((open) => !open)}>
+        {menuOpen ? <X size={21} /> : <Menu size={21} />}
+      </button>
+      <nav id="public-navigation" className={menuOpen ? "is-open" : ""}>
+        <NavLink to="/" onClick={() => setMenuOpen(false)}>Accueil</NavLink>
+        <NavLink to="/projects" onClick={() => setMenuOpen(false)}>Projets</NavLink>
         <NavLink to="/about">À propos</NavLink>
-        <NavLink to="/contact">Contact</NavLink>
+        <NavLink to="/contact" onClick={() => setMenuOpen(false)}>Contact</NavLink>
       </nav>
     </header>
   );
