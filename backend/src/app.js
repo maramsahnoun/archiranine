@@ -1,0 +1,11 @@
+import express from 'express';import helmet from 'helmet';import cors from 'cors';import cookieParser from 'cookie-parser';import { rateLimit } from 'express-rate-limit';import path from 'node:path';import { fileURLToPath } from 'node:url';import { env } from './config/env.js';import { requireAdmin } from './middleware/auth.middleware.js';import authRoutes from './routes/auth.routes.js';import publicRoutes from './routes/public.routes.js';import adminRoutes from './routes/admin.routes.js';import { errorHandler,notFound } from './middleware/error.middleware.js';
+import demoRoutes from './routes/demo.routes.js';
+const app=express();app.disable('x-powered-by');app.set('trust proxy',1);app.use(helmet({crossOriginResourcePolicy:{policy:'cross-origin'}}));
+const origins=new Set([env.FRONTEND_URL,env.ADMIN_URL]);if(env.NODE_ENV!=='production'){origins.add('http://localhost:5173');origins.add('http://localhost:5174')}app.use(cors({origin(origin,callback){if(!origin||origins.has(origin))return callback(null,true);return callback(new Error('Origin is not allowed by CORS'))},credentials:true}));
+app.use(express.json({limit:'1mb'}));app.use(express.urlencoded({extended:false,limit:'1mb'}));app.use(cookieParser());
+const here=path.dirname(fileURLToPath(import.meta.url));const uploadRoot=path.resolve(here,'..',env.UPLOAD_DIR);app.use('/uploads',express.static(uploadRoot,{maxAge:env.NODE_ENV==='production'?'7d':0,immutable:env.NODE_ENV==='production'}));
+app.get('/api/health',(req,res)=>res.json({success:true,data:{status:'ok',service:'archihome-api'}}));
+app.use('/api',(req,res,next)=>{if(app.locals.demoMode){res.setHeader('X-ArchiHome-Demo','true');return demoRoutes(req,res,next)}next()});
+app.use('/api/auth',authRoutes);app.use('/api',rateLimit({windowMs:60*1000,limit:180,standardHeaders:true,legacyHeaders:false}));app.use('/api',publicRoutes);app.use('/api/admin',requireAdmin,adminRoutes);
+app.use(notFound);app.use((err,req,res,next)=>{if(err?.type==='entity.too.large')err.status=413;if(err?.code==='LIMIT_FILE_SIZE'){err.status=413;err.message='Upload exceeds the 100 MB limit';err.code='FILE_TOO_LARGE'}if(err?.message==='Origin is not allowed by CORS'){err.status=403;err.code='CORS_REJECTED'}next(err)});app.use(errorHandler);
+export default app;

@@ -1,0 +1,8 @@
+import * as repo from '../repositories/project.repository.js';
+import { pool } from '../config/database.js';
+import { AppError } from '../utils/http.js';
+import { slugify } from '../utils/slug.js';
+export async function publicList(query,admin=false){const page=Math.max(1,Number(query.page)||1),limit=Math.min(admin?100:48,Math.max(1,Number(query.limit)||12));const minSurface=query.minSurface==null?undefined:Number(query.minSurface),maxSurface=query.maxSurface==null?undefined:Number(query.maxSurface);if((query.minSurface!=null&&!Number.isFinite(minSurface))||(query.maxSurface!=null&&!Number.isFinite(maxSurface)))throw new AppError(422,'Surface filters must be numbers','VALIDATION_ERROR');return repo.listProjects({page,limit,search:String(query.search||'').slice(0,100),category:String(query.category||''),style:String(query.style||''),minSurface,maxSurface,sort:query.sort,admin})}
+export async function detail(slug,admin=false){const project=await repo.getProject(slug,admin);if(!project)throw new AppError(404,'Project not found','PROJECT_NOT_FOUND');return {...project,...await repo.projectChildren(project.id)}}
+export async function save(data,id){if(data.categoryId){const [rows]=await pool.execute('SELECT id FROM categories WHERE id=? AND is_active=1',[data.categoryId]);if(!rows.length)throw new AppError(422,'Choose an active category','INVALID_CATEGORY')}
+ const slug=data.slug?slugify(data.slug):slugify(data.title);const [existing]=await pool.execute('SELECT id FROM projects WHERE slug=? AND id<>?', [slug,id||0]);if(existing.length)throw new AppError(409,'A project already uses this slug','SLUG_CONFLICT');return repo.saveProject({...data,slug},id)}
