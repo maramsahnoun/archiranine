@@ -124,3 +124,4 @@ CREATE POLICY "Public can view settings" ON public.site_settings FOR SELECT USIN
 CREATE POLICY "Auth users can manage settings" ON public.site_settings FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
 GRANT EXECUTE ON FUNCTION public.increment_project_views(BIGINT) TO anon, authenticated;
+

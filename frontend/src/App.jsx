@@ -16,6 +16,13 @@ import {
   X,
   MessageCircle,
   Sparkles,
+  Compass,
+  ShieldCheck,
+  Eye,
+  Award,
+  PenTool,
+  Ruler,
+  Phone,
 } from "lucide-react";
 import { api, request } from "./services/api.js";
 import {
@@ -49,6 +56,262 @@ function useProjects(params = {}) {
     };
   }, [JSON.stringify(params)]);
   return { data, error };
+}
+
+/* ============================================================
+   Founder Section: Ranine Sahnoun
+   ============================================================ */
+function FounderSection() {
+  return (
+    <section className="founder-section" id="architecte">
+      <div className="founder-grid">
+        <div className="founder-card">
+          <div className="founder-photo-wrap">
+            <img
+              src="/ranine-sahnoun.png"
+              alt="Ranine Sahnoun - Architecte d'Intérieur"
+              onError={(e) => {
+                e.target.src = "/logo.png";
+                e.target.style.objectFit = "contain";
+                e.target.style.padding = "30px";
+              }}
+            />
+            <div className="founder-badge-gold">
+              <b>Ranine Sahnoun</b>
+              <span>Fondatrice & Architecte d’Intérieur · ArchiRanin</span>
+            </div>
+          </div>
+          <div className="founder-quote">
+            « L’espace intérieur n’est pas un simple agencement : c’est une émotion, une lumière et un art de vivre sur-mesure. »
+          </div>
+        </div>
+
+        <div className="founder-story">
+          <span className="eyebrow">LA SIGNATURE ARCHIRANIN</span>
+          <h2>Ranine Sahnoun, Architecte d’Intérieur</h2>
+          <div className="founder-bio">
+            <p>
+              Passionnée par la pureté des lignes et la noblesse des matières, <strong>Ranine Sahnoun</strong> conçoit des espaces intérieurs d’exception qui racontent une histoire : la vôtre.
+            </p>
+            <p>
+              Chaque projet résidentiel ou commercial est pensé comme une œuvre sur-mesure, mariant l’élégance intemporelle du minimalisme chaleureux (tons sables, travertin, boiseries de chêne et noyer) à une rigueur d’exécution technique sans compromis.
+            </p>
+          </div>
+
+          <div className="founder-pillars">
+            <div className="pillar-item">
+              <h4><Eye size={15} color="#896130" /> Immersion 3D Interactive</h4>
+              <p>Explorez votre projet sous tous les angles avant même le début des travaux.</p>
+            </div>
+            <div className="pillar-item">
+              <h4><Ruler size={15} color="#896130" /> Plans 2D de Précision</h4>
+              <p>Dossiers techniques, calepinages, aménagements et cotes d'exécution en PDF.</p>
+            </div>
+            <div className="pillar-item">
+              <h4><Palette size={15} color="#896130" /> Matières & Teintes Nobles</h4>
+              <p>Recherche chromatique fine, harmonie de pierres naturelles et de textures.</p>
+            </div>
+            <div className="pillar-item">
+              <h4><Award size={15} color="#896130" /> Accompagnement Personnalisé</h4>
+              <p>Un dialogue direct et transparent avec Ranine à chaque étape de création.</p>
+            </div>
+          </div>
+
+          <div className="founder-actions">
+            <Link className="button primary" to="/contact">
+              <Mail size={15} /> Prendre contact avec Ranine
+            </Link>
+            <a
+              href="https://wa.me/21646412009"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="button outline"
+              style={{ color: "#25D366", borderColor: "#25D366" }}
+            >
+              <MessageCircle size={15} /> WhatsApp Direct (+216 46 412 009)
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ============================================================
+   Services & Expertise Block
+   ============================================================ */
+function ServicesSection() {
+  const services = [
+    {
+      num: "01",
+      icon: Eye,
+      title: "Visualisation 3D Interactive",
+      desc: "Modélisation 3D temps réel à 360°, simulations de lumière et rendus photoréalistes pour ressentir l'espace avant sa concrétisation.",
+    },
+    {
+      num: "02",
+      icon: Ruler,
+      title: "Plans 2D & Dossiers d'Aménagement",
+      desc: "Plans techniques côté millimètre, distributions d'espaces, schémas électriques et coupes consultables et téléchargeables en PDF.",
+    },
+    {
+      num: "03",
+      icon: Palette,
+      title: "Nuanciers & Sélection des Matières",
+      desc: "Création de palettes chromatiques harmonieuses : pierre naturelle, travertin, boiseries nobles, finitions laiton et textiles sur-mesure.",
+    },
+    {
+      num: "04",
+      icon: Sparkles,
+      title: "Rénovation & Villas de Prestige",
+      desc: "Restructuration globale de villas, lofts et résidences haut de gamme pour créer des lieux de vie fluides, lumineux et chaleureux.",
+    },
+  ];
+
+  return (
+    <section className="services-section">
+      <div className="services-header">
+        <span className="eyebrow">SAVOIR-FAIRE & PRESTATIONS</span>
+        <h2>Notre Expertise en Architecture d’Intérieur</h2>
+        <p>
+          De la première esquisse à la livraison du dossier technique complet, nous combinons sens artistique et rigueur technologique.
+        </p>
+      </div>
+
+      <div className="services-grid">
+        {services.map((s) => {
+          const Icon = s.icon;
+          return (
+            <div key={s.num} className="service-card">
+              <div className="service-card-num">{s.num}</div>
+              <div className="service-card-icon">
+                <Icon size={20} />
+              </div>
+              <h3>{s.title}</h3>
+              <p>{s.desc}</p>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+/* ============================================================
+   Process / Méthode de Travail
+   ============================================================ */
+function ProcessSection() {
+  const steps = [
+    {
+      step: "01",
+      title: "Échange & Moodboard",
+      desc: "Écoute attentive de votre mode de vie, analyse de vos goûts et formalisation des premières inspirations.",
+    },
+    {
+      step: "02",
+      title: "Modélisation 3D & Plans 2D",
+      desc: "Création des volumes, visite 3D interactive et établissement des plans techniques d'aménagement.",
+    },
+    {
+      step: "03",
+      title: "Matières & Nuancier",
+      desc: "Sélection minutieuse des échantillons de pierre, bois, tissus et finitions dans notre atelier.",
+    },
+    {
+      step: "04",
+      title: "Dossier & Réalisation",
+      desc: "Remise du dossier complet clé en main avec plans d'exécution PDF pour vos artisans et entrepreneurs.",
+    },
+  ];
+
+  return (
+    <section className="process-section">
+      <div className="process-header">
+        <span className="eyebrow">MÉTHODOLOGIE</span>
+        <h2>Notre Démarche de Projet en 4 Étapes</h2>
+        <p>
+          Un processus clair, rigoureux et transparent pour transformer vos aspirations en réalité spatiale.
+        </p>
+      </div>
+
+      <div className="process-steps-grid">
+        {steps.map((st) => (
+          <div key={st.step} className="process-step-card">
+            <div className="process-step-num">{st.step}</div>
+            <h3>{st.title}</h3>
+            <p>{st.desc}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/* ============================================================
+   Signature Materials & Palette Showcase
+   ============================================================ */
+function MaterialsSection() {
+  const materials = [
+    { hex: "#c0ab94", name: "Travertin & Sable", type: "Pierre Naturelle" },
+    { hex: "#896130", name: "Chêne Doré", type: "Boiserie Chaude" },
+    { hex: "#49321d", name: "Noyer Massif", type: "Ébénisterie Sombre" },
+    { hex: "#fefefe", name: "Blanc Minéral", type: "Épée Pure & Chaux" },
+    { hex: "#8c6232", name: "Bronze Brossé", type: "Détails Métalliques" },
+    { hex: "#614e3e", name: "Taupe & Lin", type: "Textiles Sauvages" },
+  ];
+
+  return (
+    <section className="materials-section">
+      <div className="services-header" style={{ marginBottom: "30px" }}>
+        <span className="eyebrow">NUANCIER EXCLUSIF ARCHIRANIN</span>
+        <h2>L’Harmonie des Matières Brutes & Nobles</h2>
+        <p>
+          Inspirée par la terre, la pierre et la lumière méditerranéenne, notre palette signature instaure un équilibre paisible et sophistiqué.
+        </p>
+      </div>
+
+      <div className="materials-grid">
+        {materials.map((m) => (
+          <div key={m.hex} className="material-item">
+            <div className="material-swatch" style={{ backgroundColor: m.hex }} />
+            <b>{m.name}</b>
+            <span>{m.type}</span>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/* ============================================================
+   Prestige Call to Action (CTA) Banner
+   ============================================================ */
+function CtaBanner() {
+  return (
+    <section className="cta-banner">
+      <div className="cta-copy">
+        <span className="eyebrow">CRÉONS VOTRE INTÉRIEUR D'EXCEPTION</span>
+        <h2>Prêt(e) à donner vie à vos espaces ?</h2>
+        <p>
+          Rencontrez Ranine Sahnoun pour échanger sur vos envies d'aménagement, de rénovation ou de modélisation 3D.
+        </p>
+      </div>
+      <div className="cta-buttons">
+        <Link className="button primary" to="/contact">
+          Demander une consultation <ArrowRight size={15} />
+        </Link>
+        <a
+          href="https://wa.me/21646412009"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="button outline"
+          style={{ background: "#25D366", color: "#fff", borderColor: "#25D366" }}
+        >
+          <MessageCircle size={15} /> WhatsApp (+216 46 412 009)
+        </a>
+      </div>
+    </section>
+  );
 }
 
 function Home() {
@@ -115,11 +378,18 @@ function Home() {
         </div>
       </section>
 
-      <section className="section">
+      {/* 1. Presentation of the owner: Ranine Sahnoun */}
+      <FounderSection />
+
+      {/* 2. Services & Expertise */}
+      <ServicesSection />
+
+      {/* 3. Recent Projects Portfolio */}
+      <section className="section" id="projets">
         <div className="section-header">
           <div>
             <span className="eyebrow">SÉLECTION ARCHIRANIN</span>
-            <h2>Projets & Réalisations</h2>
+            <h2>Projets & Réalisations d'Intérieur</h2>
           </div>
           <Link className="text-link" to="/projects">
             Tous les projets <ArrowRight size={15} />
@@ -140,6 +410,7 @@ function Home() {
         )}
       </section>
 
+      {/* 4. 3D Viewer Showcase */}
       <section className="home-viewer">
         <div className="showcase-copy">
           <span className="eyebrow">EXPÉRIENCE 3D INNOVANTE</span>
@@ -160,23 +431,14 @@ function Home() {
         </div>
       </section>
 
-      <section className="values">
-        <div>
-          <span>01</span>
-          <h3>Modélisation 3D Interactive</h3>
-          <p>Chaque projet prend vie sous vos yeux avec un contrôle complet à 360°.</p>
-        </div>
-        <div>
-          <span>02</span>
-          <h3>Plans 2D d’Aménagement</h3>
-          <p>Surfaces, cotes, circulations et dossiers techniques téléchargeables en PDF.</p>
-        </div>
-        <div>
-          <span>03</span>
-          <h3>Harmonie & Matières Nobles</h3>
-          <p>Palette de textures naturelles, boiseries chaudes et éclairages étudiés.</p>
-        </div>
-      </section>
+      {/* 5. Process & Méthodologie */}
+      <ProcessSection />
+
+      {/* 6. Signature Materials Palette */}
+      <MaterialsSection />
+
+      {/* 7. Call to Action Banner */}
+      <CtaBanner />
     </>
   );
 }
@@ -828,24 +1090,31 @@ function Contact({ settings }) {
 
 function About() {
   return (
-    <section className="section about-page">
-      <span className="eyebrow">À PROPOS D’ARCHIRANIN</span>
-      <h1>L’équilibre parfait entre volume, lumière et matière.</h1>
-      <p>
-        Fondé par <strong>Ranine Sahnoun</strong>, le studio <strong>ArchiRanin</strong> conçoit des intérieurs singuliers et intemporels. Notre approche associe la rigueur technique des plans 2D d’aménagement à la puissance visuelle de la modélisation 3D interactive photoréaliste.
-      </p>
-      <p>
-        Chaque projet fait l’objet d’une recherche minutieuse de matériaux : pierre naturelle, boiseries chaleureuses, menuiseries épurées et palettes chromatiques apaisantes, afin de créer des lieux de vie uniques qui vous ressemblent.
-      </p>
-      <div style={{ display: "flex", gap: "12px", marginTop: "25px" }}>
-        <Link className="button primary" to="/projects">
-          Explorer les réalisations <ArrowRight size={15} />
-        </Link>
-        <Link className="button outline" to="/contact">
-          Nous contacter
-        </Link>
-      </div>
-    </section>
+    <div style={{ display: "flex", flexDirection: "column" }}>
+      {/* 1. Header Hero for About */}
+      <section className="section about-page" style={{ paddingBottom: "40px" }}>
+        <span className="eyebrow">À PROPOS D’ARCHIRANIN</span>
+        <h1 style={{ maxWidth: "850px" }}>L’équilibre parfait entre volume, lumière et matière.</h1>
+        <p style={{ maxWidth: "750px", fontSize: "15px", lineHeight: "1.8", color: "#58483b" }}>
+          Fondé par <strong>Ranine Sahnoun</strong>, le studio <strong>ArchiRanin</strong> conçoit des intérieurs singuliers et intemporels. Notre approche associe la rigueur technique des plans 2D d’aménagement à la puissance visuelle de la modélisation 3D interactive photoréaliste.
+        </p>
+      </section>
+
+      {/* 2. Full Founder Presentation Block */}
+      <FounderSection />
+
+      {/* 3. Services & Expertise */}
+      <ServicesSection />
+
+      {/* 4. Process */}
+      <ProcessSection />
+
+      {/* 5. Materials */}
+      <MaterialsSection />
+
+      {/* 6. CTA */}
+      <CtaBanner />
+    </div>
   );
 }
 
@@ -924,21 +1193,23 @@ export default function App() {
   }, [settings.siteName, location.pathname]);
 
   return (
-    <>
+    <div className="app-layout">
       <Header settings={settings} />
       <DemoNotice />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/projects" element={<Projects />} />
-        <Route
-          path="/projects/:slug"
-          element={<Detail siteName={settings.siteName} />}
-        />
-        <Route path="/about" element={<About />} />
-        <Route path="/contact" element={<Contact settings={settings} />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+      <main className="app-content">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/projects" element={<Projects />} />
+          <Route
+            path="/projects/:slug"
+            element={<Detail siteName={settings.siteName} />}
+          />
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact settings={settings} />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </main>
       <Footer settings={settings} />
-    </>
+    </div>
   );
 }
