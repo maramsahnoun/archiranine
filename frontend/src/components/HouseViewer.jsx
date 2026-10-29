@@ -1,11 +1,32 @@
+// HouseViewer with default 80% zoom and smooth zoom‑in animation
 import { useState, Suspense, lazy, Component } from "react";
-import { Canvas } from "@react-three/fiber";
+import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import { Bounds, OrbitControls, Html } from "@react-three/drei";
 import { Maximize, Rotate3D } from "lucide-react";
+
+// Lazy‑load the 3D model
 const Model = lazy(() => import("./Model.jsx"));
+
+/**
+ * ZoomAnimator gradually increases the camera zoom from 0.8 (80 %) to 1 (100 %).
+ * The animation runs on every render until the target zoom is reached.
+ */
+function ZoomAnimator() {
+  const { camera } = useThree();
+  const targetZoom = 1; // final zoom (100 %)
+  useFrame(() => {
+    if (camera.zoom < targetZoom) {
+      camera.zoom = Math.min(camera.zoom + 0.005, targetZoom);
+      camera.updateProjectionMatrix();
+    }
+  });
+  return null;
+}
+
 export default function HouseViewer({ url, sceneBackground = "#172331" }) {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState(false);
+
   return (
     <section className="viewer-box">
       <div className="viewer-title">
@@ -21,11 +42,14 @@ export default function HouseViewer({ url, sceneBackground = "#172331" }) {
           <Maximize size={17} />
         </button>
       </div>
+
       <div className={`canvas-wrap ${open ? "is-full" : ""}`}>
-        <Canvas shadows camera={{ position: [5, 4, 7], fov: 38 }}>
+        {/* Start with zoom 0.8 (80 %). The ZoomAnimator will smoothly bring it to 1. */}
+        <Canvas shadows camera={{ position: [5, 4, 7], fov: 38, zoom: 0.8 }}>
           <color attach="background" args={[sceneBackground]} />
           <ambientLight intensity={0.8} />
           <directionalLight position={[5, 8, 4]} intensity={2} />
+          <ZoomAnimator />
           <Suspense
             fallback={
               <Html center>
@@ -38,9 +62,16 @@ export default function HouseViewer({ url, sceneBackground = "#172331" }) {
                 {url && !error ? <Model url={url} /> : <HousePlaceholder />}
               </ModelBoundary>
             </Bounds>
-            <OrbitControls makeDefault minDistance={0.1} maxDistance={1000} enableDamping dampingFactor={0.08} />
+            <OrbitControls
+              makeDefault
+              minDistance={0.1}
+              maxDistance={1000}
+              enableDamping
+              dampingFactor={0.08}
+            />
           </Suspense>
         </Canvas>
+
         {(!url || error) && (
           <div className="model-notice">
             {error
@@ -54,6 +85,7 @@ export default function HouseViewer({ url, sceneBackground = "#172331" }) {
           </button>
         )}
       </div>
+
       <div className="viewer-hint">
         <Rotate3D size={14} /> Faites glisser pour tourner <span>·</span>{" "}
         Molette pour zoomer{" "}
@@ -64,12 +96,15 @@ export default function HouseViewer({ url, sceneBackground = "#172331" }) {
     </section>
   );
 }
+
+// Error boundary for model loading
 class ModelBoundary extends Component {
   state = { failed: false };
   static getDerivedStateFromError() { return { failed: true }; }
   componentDidCatch() { this.props.onError?.(); }
   render() { return this.state.failed ? <HousePlaceholder /> : this.props.children; }
 }
+
 function HousePlaceholder() {
   return (
     <mesh castShadow receiveShadow rotation={[0, -0.35, 0]}>

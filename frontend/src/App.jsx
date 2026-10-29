@@ -63,7 +63,7 @@ function useProjects(params = {}) {
    ============================================================ */
 function FounderSection() {
   return (
-    <section className="founder-section" id="architecte">
+    <section className="founder-section section-fade" id="architecte">
       <div className="founder-grid">
         <div className="founder-card">
           <div className="founder-photo-wrap">
