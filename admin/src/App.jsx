@@ -58,7 +58,7 @@ function SignIn({ onLogin, setupRequired }) {
   return (
     <main className="login-page">
       <div className="login-story">
-        <div className="login-brand"><BrandMark /><span>Archirani</span></div>
+        <div className="login-brand"><BrandMark /><span>ArchiRanin</span></div>
         <span className="eyebrow">VOTRE ESPACE DE TRAVAIL</span>
         <h1>Chaque projet<br/>commence ici.</h1>
         <p>Retrouvez vos projets, plans, modèles 3D et demandes clients dans un espace conçu pour votre équipe.</p>
@@ -76,7 +76,7 @@ function SignIn({ onLogin, setupRequired }) {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="admin@archirani.local"
+            placeholder="sahnounranine8@gmail.com"
           />
         </label>
         <label>
@@ -97,14 +97,14 @@ function SignIn({ onLogin, setupRequired }) {
         {setupRequired && <Link className="auth-switch" to="/setup">Première connexion ? Créer le compte administrateur</Link>}
         <small>Votre session utilise un cookie sécurisé HttpOnly.</small>
       </form>
-      <div className="login-footer">ARCHIRANI · ADMINISTRATION</div>
+      <div className="login-footer">ARCHIRANIN · ADMINISTRATION</div>
     </main>
   );
 }
 function Setup({ onCreated, setupRequired }) {
   const [form,setForm]=useState({name:"",email:"",password:"",confirm:""}),[error,setError]=useState(""),[busy,setBusy]=useState(false);
   async function submit(e){e.preventDefault();setError("");if(form.password.length<12){setError("Choisissez un mot de passe d’au moins 12 caractères.");return}if(form.password!==form.confirm){setError("Les mots de passe ne correspondent pas.");return}setBusy(true);try{const d=await request(api.post("/auth/setup",{name:form.name,email:form.email,password:form.password}));onCreated(d.admin)}catch(e){setError(e.response?.data?.message||"Création impossible. Vérifiez la connexion à la base de données.")}finally{setBusy(false)}}
-  return <main className="login-page"><div className="login-story"><div className="login-brand"><BrandMark/><span>Archirani</span></div><span className="eyebrow">VOTRE ESPACE DE TRAVAIL</span><h1>Chaque projet<br/>commence ici.</h1><p>Centralisez vos maisons, plans, modèles 3D et demandes clients dans un espace conçu pour votre équipe.</p><div className="story-foot">ARCHITECTURE · PROJETS · 3D</div></div><form className="login-card" onSubmit={submit}><span className="eyebrow">CONFIGURATION SÉCURISÉE</span><h1>Créer l’accès admin</h1><p>Ce formulaire sert uniquement à créer le premier compte. Il se ferme après sa création.</p>{!setupRequired&&<div className="alert error">La configuration initiale est déjà terminée. <Link to="/">Retour à la connexion</Link></div>}<label>Nom<input required maxLength="120" value={form.name} onChange={e=>setForm({...form,name:e.target.value})} placeholder="Votre nom"/></label><label>Email<input type="email" autoComplete="email" required value={form.email} onChange={e=>setForm({...form,email:e.target.value})} placeholder="vous@entreprise.fr"/></label><label>Mot de passe<input type="password" autoComplete="new-password" minLength="12" required value={form.password} onChange={e=>setForm({...form,password:e.target.value})} placeholder="12 caractères minimum"/></label><label>Confirmer le mot de passe<input type="password" autoComplete="new-password" required value={form.confirm} onChange={e=>setForm({...form,confirm:e.target.value})} placeholder="Répétez le mot de passe"/></label>{error&&<div className="alert error">{error}</div>}<button className="button blue" disabled={busy||!setupRequired}>{busy?"Création…":"Créer le compte et ouvrir le tableau de bord"}</button><Link className="auth-switch" to="/">J’ai déjà un compte</Link></form><div className="login-footer">ARCHIRANI · ADMINISTRATION</div></main>
+  return <main className="login-page"><div className="login-story"><div className="login-brand"><BrandMark/><span>ArchiRanin</span></div><span className="eyebrow">VOTRE ESPACE DE TRAVAIL</span><h1>Chaque projet<br/>commence ici.</h1><p>Centralisez vos maisons, plans, modèles 3D et demandes clients dans un espace conçu pour votre équipe.</p><div className="story-foot">ARCHITECTURE · PROJETS · 3D</div></div><form className="login-card" onSubmit={submit}><span className="eyebrow">CONFIGURATION SÉCURISÉE</span><h1>Créer l’accès admin</h1><p>Ce formulaire sert uniquement à créer le premier compte. Il se ferme après sa création.</p>{!setupRequired&&<div className="alert error">La configuration initiale est déjà terminée. <Link to="/">Retour à la connexion</Link></div>}<label>Nom<input required maxLength="120" value={form.name} onChange={e=>setForm({...form,name:e.target.value})} placeholder="Votre nom"/></label><label>Email<input type="email" autoComplete="email" required value={form.email} onChange={e=>setForm({...form,email:e.target.value})} placeholder="vous@entreprise.fr"/></label><label>Mot de passe<input type="password" autoComplete="new-password" minLength="12" required value={form.password} onChange={e=>setForm({...form,password:e.target.value})} placeholder="12 caractères minimum"/></label><label>Confirmer le mot de passe<input type="password" autoComplete="new-password" required value={form.confirm} onChange={e=>setForm({...form,confirm:e.target.value})} placeholder="Répétez le mot de passe"/></label>{error&&<div className="alert error">{error}</div>}<button className="button blue" disabled={busy||!setupRequired}>{busy?"Création…":"Créer le compte et ouvrir le tableau de bord"}</button><Link className="auth-switch" to="/">J’ai déjà un compte</Link></form><div className="login-footer">ARCHIRANIN · ADMINISTRATION</div></main>
 }
 function Shell({ admin, onLogout }) {
   const [menu, setMenu] = useState(false);
@@ -115,7 +115,7 @@ function Shell({ admin, onLogout }) {
       <aside className={`sidebar ${menu ? "open" : ""}`}>
         <Link to="/" className="side-brand">
           <BrandMark />
-          Archirani
+          ArchiRanin
         </Link>
         <div className="side-label">ESPACE DE TRAVAIL</div>
         <nav>
@@ -161,7 +161,7 @@ function Shell({ admin, onLogout }) {
             {menu ? <X /> : <Menu />}
           </button>
           <div className="breadcrumbs">
-            Archirani <ChevronRight size={13} /> Administration
+            ArchiRanin <ChevronRight size={13} /> Administration
           </div>
           <div className="profile">
             <span className="avatar">
@@ -216,7 +216,7 @@ function App() {
       setAdmin(null);
     }
   }
-  if (checking) return <div className="loading-screen">Archirani</div>;
+  if (checking) return <div className="loading-screen">ArchiRanin</div>;
   return admin ? (
     <Shell admin={admin} onLogout={logout} />
   ) : (
@@ -1042,7 +1042,7 @@ function SettingsPage() {
         <label className="settings-field">
           <span>Nom du site</span>
           <input
-            placeholder="Archirani"
+            placeholder="ArchiRanin"
             required
             value={form.site_name || ""}
             onChange={(e) => setForm({ ...form, site_name: e.target.value })}
@@ -1052,7 +1052,7 @@ function SettingsPage() {
           <span>Email de contact</span>
           <input
             type="email"
-            placeholder="contact@archirani.local"
+            placeholder="sahnounranine8@gmail.com"
             value={form.company_email || ""}
             onChange={(e) =>
               setForm({ ...form, company_email: e.target.value })

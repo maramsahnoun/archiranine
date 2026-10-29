@@ -1,44 +1,75 @@
-# Archirani
+# ArchiRanin — Architecture d’Intérieur & Design d'Espace
 
-Architecture project platform with three applications that run locally:
+Plateforme de portfolio et d'administration moderne pour l’architecte d’intérieur **Ranine Sahnoun (ArchiRanin)**.
 
-- `frontend/`: public website at `http://localhost:5173`
-- `admin/`: admin dashboard at `http://localhost:5174`
-- `backend/`: Express API at `http://localhost:3000`
-- `database/`: MySQL schema and sample projects
+Ce projet a été optimisé pour **réduire à 100% les coûts d’hébergement (0€ / mois)** en éliminant le serveur backend dédié au profit d’une connexion directe à **Supabase** (Base de données PostgreSQL, Authentification, Stockage de fichiers et API serverless), tout en maximisant le **SEO** et l'**expérience 3D interactive**.
 
-## Run locally with MySQL
+---
 
-1. Start MySQL and import `database/schema.sql`, then `database/seed.sql` for sample categories and projects. The starter database is named `archihome` to preserve the existing schema and local database.
-2. Check `backend/.env`; it should use `NODE_ENV=development`, `DB_HOST=127.0.0.1`, `DB_PORT=3306`, the local MySQL database/user/password, and a random `SESSION_SECRET`. Do not commit this file.
-3. Start the API in a terminal:
+## Architecture
 
-   ```powershell
-   cd backend
-   npm install
-   npm run dev
-   ```
+- **`frontend/`** : Site vitrine public (React + Vite + Three.js + Tailwind CSS)
+  - Visualisation 3D interactive (`.glb` / Three.js OrbitControls)
+  - Nuancier architectural & palette de matières
+  - Galerie de rendus haute définition avec zoom plein écran
+  - Plans 2D d'aménagement consultables et téléchargeables en PDF
+  - Support des visites vidéo (YouTube, Vimeo, MP4 direct)
+  - Formulaire de contact connecté directement à Supabase
+  - Bouton direct WhatsApp (+216 46 412 009)
+  - 100% optimisé SEO (JSON-LD Schema, OpenGraph, Balises Meta, Sitemap, Robots.txt)
+- **`admin/`** : Tableau de bord administratif sécurisé (React + Vite + Supabase Auth & Storage)
+  - Gestion des projets (création, modification, publication, archivage)
+  - Upload direct vers Supabase Storage des modèles 3D (`.glb`), photos et plans PDF
+  - Gestion des catégories
+  - Lecture et gestion des messages de contact clients
+  - Configuration du site et réseaux sociaux (LinkedIn, WhatsApp, etc.)
 
-4. Start the public site in another terminal:
+---
 
-   ```powershell
-   cd frontend
-   npm install
-   npm run dev
-   ```
+## Lancement local
 
-5. Start the admin dashboard in a third terminal:
+### 1. Site Public (Frontend)
 
-   ```powershell
-   cd admin
-   npm install
-   npm run dev
-   ```
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-6. Open `http://localhost:5173` for the public site and `http://localhost:5174/setup` to create the first admin. Setup is available only while the admins table is empty; the password must be at least 12 characters.
+Disponible sur `http://localhost:5173`.
 
-The Vite apps use `/api` locally and proxy requests to the backend on port 3000. If MySQL is unavailable in development, the API falls back to temporary in-memory demo data; changes in demo mode are not saved to MySQL.
+### 2. Administration
 
-Admin → Configuration saves the site name, contact details, and LinkedIn/Instagram/Facebook profile URLs. Those details appear on the public site; social icons show after their profile URLs are saved.
+```bash
+cd admin
+npm install
+npm run dev
+```
 
-For optional later hosting, use the `.env.production.example` files and replace their generic `your-domain.tld` values with your hosting provider's values. No specific domain is configured in this project.
+Disponible sur `http://localhost:5174`.
+
+#### Identifiants Administrateur créés :
+- **Email** : `sahnounranine8@gmail.com` (ou `admin@archiranin.com`)
+- **Mot de passe** : `AdminPassword2026!`
+
+---
+
+## Données & Supabase
+
+- **Projet Supabase** : `https://kptfmbhhrjqhyhcknhxc.supabase.co`
+- **Bucket Storage Public** : `archiranin`
+- **Schéma SQL** : `database/supabase_schema.sql`
+- **Projet exemple importé** : *Villa 1 - Résidence Contemporaine*
+  - 8 rendus 3D HD
+  - 2 plans 2D PDF (Rez-de-chaussée et Étage)
+  - 1 modèle 3D interactif `villa-1.glb` (10 Mo)
+  - Informations de contact & logo officiel
+
+---
+
+## Déploiement en production (0€ / mois)
+
+Puisqu'aucun serveur backend Node.js n'est nécessaire :
+1. Déployez `frontend` sur **Vercel**, **Netlify** ou **Cloudflare Pages** (gratuit).
+2. Déployez `admin` sur un sous-domaine (ex: `admin.archiranin.com` ou via Vercel).
+3. Renseignez les variables d'environnement `VITE_SUPABASE_URL` et `VITE_SUPABASE_ANON_KEY` dans votre interface d'hébergement.
