@@ -43,3 +43,4 @@ cd ../admin && npm ci && npm run build && npm run preview
 - Lighthouse (Performance / SEO / Accessibilité) ≥ 90.
 - Chunk JS principal > 1 Mo : prévoir un code-splitting (`React.lazy` pour les pages et la 3D) – optimisation recommandée.
 - Tester : accueil, projets, détail d'un projet + visionneuse 3D, contact, 404, mobile.
+

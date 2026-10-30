@@ -1,12 +1,11 @@
 export default function BrandMark() {
   return (
-    <span className="brand-logo-crop" aria-hidden="true" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+    <span className="brand-logo-crop" aria-hidden="true">
       <img
         src="/logo.png"
         alt="ArchiRanin Logo"
-        style={{ maxHeight: '36px', width: 'auto', objectFit: 'contain' }}
         onError={(e) => {
-          e.target.style.display = 'none';
+          e.target.style.display = "none";
         }}
       />
     </span>
