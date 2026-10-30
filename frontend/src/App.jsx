@@ -32,6 +32,7 @@ import {
   ErrorState,
   Empty,
   DemoNotice,
+  FloatingWhatsApp,
 } from "./components/Layout.jsx";
 import { ProjectCard } from "./components/ProjectCard.jsx";
 import HouseViewer from "./components/HouseViewer.jsx";
@@ -954,7 +955,7 @@ function Detail({ siteName = "ArchiRanin" }) {
 function Contact({ settings }) {
   const [done, setDone] = useState(false),
     [error, setError] = useState("");
-  const project = new URLSearchParams(location.search).get("project") || "";
+  const loc = useLocation(); const qp = new URLSearchParams(loc.search); const project = qp.get("project") || (qp.get("sujet") === "devis" ? "Demande de devis" : "");
 
   async function submit(e) {
     e.preventDefault();
@@ -1237,6 +1238,7 @@ export default function App() {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
+      <FloatingWhatsApp settings={settings} />
       <Footer settings={settings} />
     </div>
   );

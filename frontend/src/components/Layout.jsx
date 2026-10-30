@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
-import { Facebook, Instagram, Linkedin, Menu, X, MessageCircle } from "lucide-react";
+import { Instagram, Linkedin, Menu, X, MessageCircle, ArrowUpRight } from "lucide-react";
 import BrandMark from "./BrandMark.jsx";
 
 function safeProfileUrl(value) {
@@ -42,16 +42,6 @@ export function Header({ settings }) {
           <span className="brand-sub">Architecte d’Intérieur</span>
         </span>
       </Link>
-      <button
-        className="mobile-nav-toggle"
-        type="button"
-        aria-label={menuOpen ? "Fermer le menu" : "Ouvrir le menu"}
-        aria-expanded={menuOpen}
-        aria-controls="public-navigation"
-        onClick={() => setMenuOpen((open) => !open)}
-      >
-        {menuOpen ? <X size={21} /> : <Menu size={21} />}
-      </button>
       <nav id="public-navigation" className={menuOpen ? "is-open" : ""}>
         <NavLink to="/" onClick={() => setMenuOpen(false)}>
           Accueil
@@ -65,8 +55,63 @@ export function Header({ settings }) {
         <NavLink to="/contact" onClick={() => setMenuOpen(false)}>
           Contact
         </NavLink>
+        <Link
+          to="/contact?sujet=devis"
+          className="nav-cta-quote mobile-only-cta"
+          onClick={() => setMenuOpen(false)}
+        >
+          Demander un devis <ArrowUpRight size={14} />
+        </Link>
       </nav>
+      <div className="topbar-actions">
+        <Link to="/contact?sujet=devis" className="nav-cta-quote desktop-only-cta">
+          <span>Demander un devis</span>
+          <ArrowUpRight size={14} />
+        </Link>
+        <button
+          className="mobile-nav-toggle"
+          type="button"
+          aria-label={menuOpen ? "Fermer le menu" : "Ouvrir le menu"}
+          aria-expanded={menuOpen}
+          aria-controls="public-navigation"
+          onClick={() => setMenuOpen((open) => !open)}
+        >
+          {menuOpen ? <X size={21} /> : <Menu size={21} />}
+        </button>
+      </div>
     </header>
+  );
+}
+
+export function FloatingWhatsApp({ settings }) {
+  const rawWhatsapp = settings?.whatsapp_number || settings?.whatsapp || "+21646412009";
+  const digits = rawWhatsapp.replace(/[^0-9]/g, "") || "21646412009";
+  const message = encodeURIComponent(
+    "Bonjour ArchiRanin, je souhaite demander un devis / discuter d'un projet d'architecture d'intérieur."
+  );
+  const href = `https://wa.me/${digits}?text=${message}`;
+
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="whatsapp-fab"
+      aria-label="Discuter sur WhatsApp"
+      title="Discuter avec Ranine Sahnoun sur WhatsApp"
+    >
+      <span className="whatsapp-fab-pulse" aria-hidden="true" />
+      <svg
+        viewBox="0 0 32 32"
+        width="26"
+        height="26"
+        fill="currentColor"
+        aria-hidden="true"
+      >
+        <path d="M16.004 3.2c-7.068 0-12.8 5.732-12.8 12.8 0 2.258.59 4.462 1.71 6.404L3.2 28.8l6.56-1.692a12.74 12.74 0 0 0 6.244 1.628h.006c7.066 0 12.79-5.732 12.79-12.8 0-3.42-1.332-6.636-3.75-9.054A12.712 12.712 0 0 0 16.004 3.2zm0 23.376h-.004a10.6 10.6 0 0 1-5.404-1.48l-.388-.23-4.016 1.036 1.072-3.916-.252-.402a10.574 10.574 0 0 1-1.636-5.654c0-5.862 4.77-10.63 10.634-10.63 2.84 0 5.51 1.106 7.518 3.116a10.562 10.562 0 0 1 3.112 7.52c0 5.864-4.772 10.64-10.636 10.64zm5.834-7.964c-.32-.16-1.892-.934-2.186-1.04-.292-.108-.506-.16-.72.16-.212.32-.826 1.04-1.012 1.254-.186.212-.372.24-.692.08-.32-.16-1.35-.498-2.572-1.586-.95-.848-1.592-1.896-1.778-2.216-.186-.32-.02-.492.14-.652.144-.144.32-.372.48-.558.16-.186.212-.32.32-.534.106-.212.054-.4-.026-.56-.08-.16-.72-1.734-.986-2.374-.26-.624-.524-.54-.72-.55-.186-.008-.4-.01-.612-.01s-.56.08-.852.4c-.294.32-1.12 1.094-1.12 2.668s1.146 3.094 1.306 3.308c.16.212 2.256 3.444 5.466 4.83.764.33 1.36.526 1.824.674.766.244 1.464.21 2.016.128.614-.092 1.892-.774 2.16-1.52.266-.746.266-1.386.186-1.52-.08-.134-.292-.214-.612-.374z" />
+      </svg>
+      <span className="whatsapp-fab-label">WhatsApp</span>
+    </a>
   );
 }
 
