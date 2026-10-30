@@ -133,7 +133,7 @@ function Shell({ admin, onLogout }) {
         </nav>
         <div className="sidebar-bottom">
           <a
-            href={import.meta.env.VITE_PUBLIC_URL || "http://localhost:5173"}
+            href={import.meta.env.VITE_PUBLIC_URL || "/"}
             target="_blank"
             rel="noreferrer"
           >

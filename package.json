@@ -1,0 +1,13 @@
+{
+  "name": "archiranin",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ArchiRanin - Portfolio Architecture d'Intérieur & Design 3D (Supabase + React/Vite)",
+  "scripts": {
+    "install:all": "npm --prefix frontend install && npm --prefix admin install",
+    "dev": "npm --prefix frontend run dev",
+    "dev:admin": "npm --prefix admin run dev",
+    "build": "npm --prefix frontend run build && npm --prefix admin run build -- --base=/admin/ --outDir ../frontend/dist/admin --emptyOutDir",
+    "preview": "npm --prefix frontend run preview"
+  }
+}

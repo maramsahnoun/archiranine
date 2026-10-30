@@ -9,9 +9,12 @@ import "./dashboard.css";
 import "./demo.css";
 import "./polish.css";
 import "./settings.css";
+
+const basename = window.location.pathname.startsWith("/admin") ? "/admin" : "/";
+
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <BrowserRouter>
+    <BrowserRouter basename={basename}>
       <App />
     </BrowserRouter>
   </React.StrictMode>,
