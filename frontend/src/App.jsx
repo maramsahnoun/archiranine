@@ -1158,6 +1158,37 @@ export default function App() {
   });
   const location = useLocation();
 
+  // Scroll-reveal: show every .section-fade block when it enters the viewport
+  useEffect(() => {
+    const els = document.querySelectorAll(".section-fade:not(.visible)");
+    if (!("IntersectionObserver" in window)) {
+      els.forEach((el) => el.classList.add("visible"));
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) =>
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            e.target.classList.add("visible");
+            observer.unobserve(e.target);
+          }
+        }),
+      { threshold: 0.05 },
+    );
+    els.forEach((el) => observer.observe(el));
+    const fallback = window.setTimeout(
+      () =>
+        document
+          .querySelectorAll(".section-fade")
+          .forEach((el) => el.classList.add("visible")),
+      1500,
+    );
+    return () => {
+      observer.disconnect();
+      window.clearTimeout(fallback);
+    };
+  }, [location.pathname]);
+
   useEffect(() => {
     let alive = true;
     request(api.get("/settings"))
