@@ -21,3 +21,32 @@
   opacity: 1;
   transform: translateY(0);
 }
+
+/* Staggered reveal of grid children inside a revealed block */
+.section-fade .service-card,
+.section-fade .project-card,
+.section-fade .pillar-item {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+.section-fade.visible .service-card,
+.section-fade.visible .project-card,
+.section-fade.visible .pillar-item {
+  opacity: 1;
+  transform: translateY(0);
+}
+.section-fade.visible :is(.service-card, .project-card, .pillar-item):nth-child(2) { transition-delay: 0.08s; }
+.section-fade.visible :is(.service-card, .project-card, .pillar-item):nth-child(3) { transition-delay: 0.16s; }
+.section-fade.visible :is(.service-card, .project-card, .pillar-item):nth-child(4) { transition-delay: 0.24s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .section-fade,
+  .section-fade .service-card,
+  .section-fade .project-card,
+  .section-fade .pillar-item {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}

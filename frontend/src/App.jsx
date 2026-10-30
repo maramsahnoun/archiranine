@@ -169,7 +169,7 @@ function ServicesSection() {
   ];
 
   return (
-    <section className="services-section">
+    <section className="services-section section-fade">
       <div className="services-header">
         <span className="eyebrow">SAVOIR-FAIRE & PRESTATIONS</span>
         <h2>Notre Expertise en Architecture d’Intérieur</h2>
@@ -225,7 +225,7 @@ function ProcessSection() {
   ];
 
   return (
-    <section className="process-section">
+    <section className="process-section section-fade">
       <div className="process-header">
         <span className="eyebrow">MÉTHODOLOGIE</span>
         <h2>Notre Démarche de Projet en 4 Étapes</h2>
@@ -261,7 +261,7 @@ function MaterialsSection() {
   ];
 
   return (
-    <section className="materials-section">
+    <section className="materials-section section-fade">
       <div className="services-header" style={{ marginBottom: "30px" }}>
         <span className="eyebrow">NUANCIER EXCLUSIF ARCHIRANIN</span>
         <h2>L’Harmonie des Matières Brutes & Nobles</h2>
@@ -288,7 +288,7 @@ function MaterialsSection() {
    ============================================================ */
 function CtaBanner() {
   return (
-    <section className="cta-banner">
+    <section className="cta-banner section-fade">
       <div className="cta-copy">
         <span className="eyebrow">CRÉONS VOTRE INTÉRIEUR D'EXCEPTION</span>
         <h2>Prêt(e) à donner vie à vos espaces ?</h2>
@@ -385,7 +385,7 @@ function Home() {
       <ServicesSection />
 
       {/* 3. Recent Projects Portfolio */}
-      <section className="section" id="projets">
+      <section className="section section-fade" id="projets">
         <div className="section-header">
           <div>
             <span className="eyebrow">SÉLECTION ARCHIRANIN</span>
@@ -411,7 +411,7 @@ function Home() {
       </section>
 
       {/* 4. 3D Viewer Showcase */}
-      <section className="home-viewer">
+      <section className="home-viewer section-fade">
         <div className="showcase-copy">
           <span className="eyebrow">EXPÉRIENCE 3D INNOVANTE</span>
           <h2>
@@ -1158,34 +1158,31 @@ export default function App() {
   });
   const location = useLocation();
 
-  // Scroll-reveal: show every .section-fade block when it enters the viewport
+  // Scroll-reveal: every .section-fade block fades in when it enters the viewport.
+  // A MutationObserver also catches blocks rendered later (after data loads / route change).
   useEffect(() => {
-    const els = document.querySelectorAll(".section-fade:not(.visible)");
+    const all = () => document.querySelectorAll(".section-fade:not(.visible)");
     if (!("IntersectionObserver" in window)) {
-      els.forEach((el) => el.classList.add("visible"));
+      all().forEach((el) => el.classList.add("visible"));
       return;
     }
-    const observer = new IntersectionObserver(
+    const io = new IntersectionObserver(
       (entries) =>
         entries.forEach((e) => {
           if (e.isIntersecting) {
             e.target.classList.add("visible");
-            observer.unobserve(e.target);
+            io.unobserve(e.target);
           }
         }),
-      { threshold: 0.05 },
+      { threshold: 0.08, rootMargin: "0px 0px -6% 0px" },
     );
-    els.forEach((el) => observer.observe(el));
-    const fallback = window.setTimeout(
-      () =>
-        document
-          .querySelectorAll(".section-fade")
-          .forEach((el) => el.classList.add("visible")),
-      1500,
-    );
+    const scan = () => all().forEach((el) => io.observe(el));
+    scan();
+    const mo = new MutationObserver(scan);
+    mo.observe(document.body, { childList: true, subtree: true });
     return () => {
-      observer.disconnect();
-      window.clearTimeout(fallback);
+      io.disconnect();
+      mo.disconnect();
     };
   }, [location.pathname]);
 
