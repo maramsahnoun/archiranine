@@ -13,17 +13,7 @@ function safeProfileUrl(value) {
 }
 
 export function DemoNotice() {
-  const [active, setActive] = useState(() => Boolean(window.__ARCHIHOME_DEMO__));
-  useEffect(() => {
-    const activate = () => setActive(true);
-    window.addEventListener("archihome:demo", activate);
-    return () => window.removeEventListener("archihome:demo", activate);
-  }, []);
-  return active ? (
-    <div className="demo-notice">
-      Mode démo actif. Connecté à la base de données Supabase.
-    </div>
-  ) : null;
+  return null;
 }
 
 export function Header({ settings }) {

@@ -1,33 +1,64 @@
 import { createClient } from "@supabase/supabase-js";
-import { demoApi } from "./demo.js";
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "https://kptfmbhhrjqhyhcknhxc.supabase.co";
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwdGZtYmhocmpxaHloY2tuaHhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMyOTg3NDQsImV4cCI6MjEwODg3NDc0NH0.XnISsfmvwkLSRKqMmOjHSjTYQ1rZwIOPJOW7l36SIig";
+const SUPABASE_URL =
+  import.meta.env.VITE_SUPABASE_URL ||
+  "https://kptfmbhhrjqhyhcknhxc.supabase.co";
+const SUPABASE_ANON_KEY =
+  import.meta.env.VITE_SUPABASE_ANON_KEY ||
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwdGZtYmhocmpxaHloY2tuaHhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMyOTg3NDQsImV4cCI6MjEwODg3NDc0NH0.XnISsfmvwkLSRKqMmOjHSjTYQ1rZwIOPJOW7l36SIig";
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+function normalizeError(err) {
+  const message =
+    err?.response?.data?.message ||
+    err?.message ||
+    err?.error_description ||
+    "Une erreur est survenue.";
+  const wrapped = err instanceof Error ? err : new Error(message);
+  if (!wrapped.response) {
+    wrapped.response = {
+      status: err?.status || err?.code === "PGRST116" ? 404 : 400,
+      data: { message },
+    };
+  }
+  return wrapped;
+}
+
+function parseUrl(path, options = {}) {
+  const [rawPath, queryString = ""] = String(path || "/").split("?");
+  const cleanPath = rawPath.replace(/^\/api/, "").replace(/\/$/, "") || "/";
+  const urlParams = Object.fromEntries(new URLSearchParams(queryString));
+  const params = { ...urlParams, ...(options.params || {}) };
+  return { cleanPath, params };
+}
+
 function formatProject(p) {
   if (!p) return null;
-  const sortedImages = (p.project_images || []).sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
-  const coverObj = sortedImages.find(i => i.is_cover) || sortedImages[0];
+  const sortedImages = (p.project_images || []).sort(
+    (a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0),
+  );
+  const coverObj = sortedImages.find((i) => i.is_cover) || sortedImages[0];
   const coverImage = coverObj?.image_url || p.cover_image || "";
 
-  const images = sortedImages.map(img => ({
+  const images = sortedImages.map((img) => ({
     id: img.id,
     imageUrl: img.image_url,
     altText: img.alt_text || p.title,
     isCover: Boolean(img.is_cover),
-    sortOrder: img.sort_order
+    sortOrder: img.sort_order,
   }));
 
-  const plans = (p.project_plans || []).sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0)).map(plan => ({
-    id: plan.id,
-    floorName: plan.floor_name,
-    floorNumber: plan.floor_number,
-    imageUrl: plan.image_url,
-    pdfUrl: plan.pdf_url,
-    sortOrder: plan.sort_order
-  }));
+  const plans = (p.project_plans || [])
+    .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+    .map((plan) => ({
+      id: plan.id,
+      floorName: plan.floor_name,
+      floorNumber: plan.floor_number,
+      imageUrl: plan.image_url,
+      pdfUrl: plan.pdf_url,
+      sortOrder: plan.sort_order,
+    }));
 
   return {
     id: p.id,
@@ -52,13 +83,12 @@ function formatProject(p) {
     coverImage,
     images,
     plans,
-    createdAt: p.created_at
+    createdAt: p.created_at,
   };
 }
 
 async function handleGet(path, options = {}) {
-  const cleanPath = path.replace(/^\/api/, "").replace(/\/$/, "") || "/";
-  const params = options.params || {};
+  const { cleanPath, params } = parseUrl(path, options);
 
   // 1. Categories
   if (cleanPath === "/categories") {
@@ -68,27 +98,50 @@ async function handleGet(path, options = {}) {
       .eq("is_active", true)
       .order("id", { ascending: true });
     if (error) throw error;
-    return data.map(c => ({ id: c.id, name: c.name, slug: c.slug, description: c.description }));
+    return (data || []).map((c) => ({
+      id: c.id,
+      name: c.name,
+      slug: c.slug,
+      description: c.description,
+    }));
   }
 
   // 2. Projects list
   if (cleanPath === "/projects") {
     let query = supabase
       .from("projects")
-      .select("*, categories(id, name, slug), project_images(*)", { count: "exact" })
+      .select("*, categories(id, name, slug), project_images(*)", {
+        count: "exact",
+      })
       .eq("status", "published");
 
     if (params.category) {
       if (!isNaN(Number(params.category))) {
         query = query.eq("category_id", Number(params.category));
       } else {
-        const { data: cat } = await supabase.from("categories").select("id").eq("slug", params.category).maybeSingle();
-        if (cat) query = query.eq("category_id", cat.id);
+        const { data: cat } = await supabase
+          .from("categories")
+          .select("id")
+          .eq("slug", params.category)
+          .maybeSingle();
+        if (cat) {
+          query = query.eq("category_id", cat.id);
+        } else {
+          return {
+            projects: [],
+            pagination: { page: 1, limit: 12, total: 0, totalPages: 0 },
+          };
+        }
       }
     }
 
     if (params.search) {
-      query = query.or(`title.ilike.%${params.search}%,short_description.ilike.%${params.search}%`);
+      const term = String(params.search).trim();
+      if (term) {
+        query = query.or(
+          `title.ilike.%${term}%,short_description.ilike.%${term}%,style.ilike.%${term}%`,
+        );
+      }
     }
 
     if (params.sort === "views") {
@@ -117,8 +170,8 @@ async function handleGet(path, options = {}) {
         page,
         limit,
         total,
-        totalPages: Math.ceil(total / limit)
-      }
+        totalPages: Math.ceil(total / limit),
+      },
     };
   }
 
@@ -137,7 +190,14 @@ async function handleGet(path, options = {}) {
 
     const { data, error } = await query.maybeSingle();
     if (error) throw error;
-    if (!data) return null;
+    if (!data) {
+      const notFoundErr = new Error("Projet introuvable");
+      notFoundErr.response = {
+        status: 404,
+        data: { message: "Projet introuvable" },
+      };
+      throw notFoundErr;
+    }
     return formatProject(data);
   }
 
@@ -146,7 +206,7 @@ async function handleGet(path, options = {}) {
     const { data, error } = await supabase.from("site_settings").select("*");
     if (error) throw error;
     const settings = {};
-    (data || []).forEach(item => {
+    (data || []).forEach((item) => {
       settings[item.setting_key] = item.setting_value;
     });
     return settings;
@@ -156,7 +216,7 @@ async function handleGet(path, options = {}) {
 }
 
 async function handlePost(path, body = {}) {
-  const cleanPath = path.replace(/^\/api/, "").replace(/\/$/, "") || "/";
+  const { cleanPath } = parseUrl(path);
 
   // 1. Increment Views
   const viewMatch = cleanPath.match(/^\/projects\/(\d+)\/view$/);
@@ -166,22 +226,26 @@ async function handlePost(path, body = {}) {
     return { success: true };
   }
 
-  // 2. Submit Contact Message
+  // 2. Submit Contact Message (Note: Do NOT chain .select() as anon role only has INSERT RLS policy)
   if (cleanPath === "/messages") {
-    const { data, error } = await supabase
-      .from("messages")
-      .insert({
-        name: body.name || "",
-        email: body.email || "",
-        phone: body.phone || null,
-        subject: body.subject || null,
-        message: body.message || "",
-        status: "unread"
-      })
-      .select("id")
-      .single();
+    const name = String(body.name || "").trim();
+    const email = String(body.email || "").trim();
+    const message = String(body.message || "").trim();
+
+    if (!name || !email || !message) {
+      throw new Error("Veuillez remplir votre nom, email et message.");
+    }
+
+    const { error } = await supabase.from("messages").insert({
+      name,
+      email,
+      phone: body.phone ? String(body.phone).trim() : null,
+      subject: body.subject ? String(body.subject).trim() : null,
+      message,
+      status: "unread",
+    });
     if (error) throw error;
-    return { id: data.id };
+    return { success: true };
   }
 
   throw new Error(`POST endpoint non géré: ${cleanPath}`);
@@ -193,28 +257,18 @@ export const api = {
       const data = await handleGet(url, options);
       return { data: { success: true, data }, status: 200 };
     } catch (err) {
-      console.warn("Supabase GET error, fallback to demo if available:", err);
-      const fallback = demoApi({ method: "get", url, ...options });
-      if (fallback !== undefined) {
-        return { data: { success: true, data: fallback }, status: 200 };
-      }
-      throw err;
+      throw normalizeError(err);
     }
   },
 
   async post(url, body = {}, options = {}) {
     try {
-      const data = await handlePost(url, body);
+      const data = await handlePost(url, body, options);
       return { data: { success: true, data }, status: 200 };
     } catch (err) {
-      console.warn("Supabase POST error, fallback to demo if available:", err);
-      const fallback = demoApi({ method: "post", url, data: body, ...options });
-      if (fallback !== undefined) {
-        return { data: { success: true, data: fallback }, status: 200 };
-      }
-      throw err;
+      throw normalizeError(err);
     }
-  }
+  },
 };
 
 export async function request(promise) {

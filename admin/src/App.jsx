@@ -1,5 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
-import { Link, NavLink, Route, Routes, useNavigate } from "react-router-dom";
+import {
+  Link,
+  NavLink,
+  Route,
+  Routes,
+  useNavigate,
+  useParams,
+} from "react-router-dom";
 import {
   LayoutDashboard,
   FolderKanban,
@@ -24,6 +31,15 @@ import {
 } from "lucide-react";
 import { api, request } from "./services/api.js";
 import BrandMark from "./components/BrandMark.jsx";
+
+const PUBLIC_SITE_URL =
+  import.meta.env.VITE_PUBLIC_URL ||
+  (typeof window !== "undefined" && window.location.port === "5174"
+    ? "http://localhost:5173"
+    : typeof window !== "undefined"
+      ? window.location.origin
+      : "/");
+
 const nav = [
   ["/", "Tableau de bord", LayoutDashboard],
   ["/projects", "Projets", FolderKanban],
@@ -34,11 +50,13 @@ const nav = [
   ["/messages", "Messages", Mail],
   ["/settings", "Paramètres", Settings],
 ];
+
 function SignIn({ onLogin, setupRequired }) {
   const [email, setEmail] = useState(""),
     [password, setPassword] = useState(""),
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false);
+
   async function submit(e) {
     e.preventDefault();
     setError("");
@@ -55,13 +73,24 @@ function SignIn({ onLogin, setupRequired }) {
       setBusy(false);
     }
   }
+
   return (
     <main className="login-page">
       <div className="login-story">
-        <div className="login-brand"><BrandMark /><span>ArchiRanin</span></div>
+        <div className="login-brand">
+          <BrandMark />
+          <span>ArchiRanin</span>
+        </div>
         <span className="eyebrow">VOTRE ESPACE DE TRAVAIL</span>
-        <h1>Chaque projet<br/>commence ici.</h1>
-        <p>Retrouvez vos projets, plans, modèles 3D et demandes clients dans un espace conçu pour votre équipe.</p>
+        <h1>
+          Chaque projet
+          <br />
+          commence ici.
+        </h1>
+        <p>
+          Retrouvez vos projets, plans, modèles 3D et demandes clients dans un
+          espace conçu pour votre équipe.
+        </p>
         <div className="story-foot">ARCHITECTURE · PROJETS · 3D</div>
       </div>
       <form className="login-card" onSubmit={submit}>
@@ -94,22 +123,153 @@ function SignIn({ onLogin, setupRequired }) {
         <button className="button blue" disabled={busy}>
           {busy ? "Connexion…" : "Se connecter"}
         </button>
-        {setupRequired && <Link className="auth-switch" to="/setup">Première connexion ? Créer le compte administrateur</Link>}
-        <small>Votre session utilise un cookie sécurisé HttpOnly.</small>
+        {setupRequired && (
+          <Link className="auth-switch" to="/setup">
+            Première connexion ? Créer le compte administrateur
+          </Link>
+        )}
+        <small>Connexion sécurisée via Supabase Auth.</small>
       </form>
       <div className="login-footer">ARCHIRANIN · ADMINISTRATION</div>
     </main>
   );
 }
+
 function Setup({ onCreated, setupRequired }) {
-  const [form,setForm]=useState({name:"",email:"",password:"",confirm:""}),[error,setError]=useState(""),[busy,setBusy]=useState(false);
-  async function submit(e){e.preventDefault();setError("");if(form.password.length<12){setError("Choisissez un mot de passe d’au moins 12 caractères.");return}if(form.password!==form.confirm){setError("Les mots de passe ne correspondent pas.");return}setBusy(true);try{const d=await request(api.post("/auth/setup",{name:form.name,email:form.email,password:form.password}));onCreated(d.admin)}catch(e){setError(e.response?.data?.message||"Création impossible. Vérifiez la connexion à la base de données.")}finally{setBusy(false)}}
-  return <main className="login-page"><div className="login-story"><div className="login-brand"><BrandMark/><span>ArchiRanin</span></div><span className="eyebrow">VOTRE ESPACE DE TRAVAIL</span><h1>Chaque projet<br/>commence ici.</h1><p>Centralisez vos maisons, plans, modèles 3D et demandes clients dans un espace conçu pour votre équipe.</p><div className="story-foot">ARCHITECTURE · PROJETS · 3D</div></div><form className="login-card" onSubmit={submit}><span className="eyebrow">CONFIGURATION SÉCURISÉE</span><h1>Créer l’accès admin</h1><p>Ce formulaire sert uniquement à créer le premier compte. Il se ferme après sa création.</p>{!setupRequired&&<div className="alert error">La configuration initiale est déjà terminée. <Link to="/">Retour à la connexion</Link></div>}<label>Nom<input required maxLength="120" value={form.name} onChange={e=>setForm({...form,name:e.target.value})} placeholder="Votre nom"/></label><label>Email<input type="email" autoComplete="email" required value={form.email} onChange={e=>setForm({...form,email:e.target.value})} placeholder="vous@entreprise.fr"/></label><label>Mot de passe<input type="password" autoComplete="new-password" minLength="12" required value={form.password} onChange={e=>setForm({...form,password:e.target.value})} placeholder="12 caractères minimum"/></label><label>Confirmer le mot de passe<input type="password" autoComplete="new-password" required value={form.confirm} onChange={e=>setForm({...form,confirm:e.target.value})} placeholder="Répétez le mot de passe"/></label>{error&&<div className="alert error">{error}</div>}<button className="button blue" disabled={busy||!setupRequired}>{busy?"Création…":"Créer le compte et ouvrir le tableau de bord"}</button><Link className="auth-switch" to="/">J’ai déjà un compte</Link></form><div className="login-footer">ARCHIRANIN · ADMINISTRATION</div></main>
+  const [form, setForm] = useState({
+      name: "",
+      email: "",
+      password: "",
+      confirm: "",
+    }),
+    [error, setError] = useState(""),
+    [busy, setBusy] = useState(false);
+
+  async function submit(e) {
+    e.preventDefault();
+    setError("");
+    if (form.password.length < 12) {
+      setError("Choisissez un mot de passe d’au moins 12 caractères.");
+      return;
+    }
+    if (form.password !== form.confirm) {
+      setError("Les mots de passe ne correspondent pas.");
+      return;
+    }
+    setBusy(true);
+    try {
+      const d = await request(
+        api.post("/auth/setup", {
+          name: form.name,
+          email: form.email,
+          password: form.password,
+        }),
+      );
+      onCreated(d.admin);
+    } catch (e) {
+      setError(
+        e.response?.data?.message ||
+          "Création impossible. Vérifiez la connexion à la base de données.",
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <main className="login-page">
+      <div className="login-story">
+        <div className="login-brand">
+          <BrandMark />
+          <span>ArchiRanin</span>
+        </div>
+        <span className="eyebrow">VOTRE ESPACE DE TRAVAIL</span>
+        <h1>
+          Chaque projet
+          <br />
+          commence ici.
+        </h1>
+        <p>
+          Centralisez vos maisons, plans, modèles 3D et demandes clients dans un
+          espace conçu pour votre équipe.
+        </p>
+        <div className="story-foot">ARCHITECTURE · PROJETS · 3D</div>
+      </div>
+      <form className="login-card" onSubmit={submit}>
+        <span className="eyebrow">CONFIGURATION SÉCURISÉE</span>
+        <h1>Créer l’accès admin</h1>
+        <p>
+          Ce formulaire sert uniquement à créer le premier compte. Il se ferme
+          après sa création.
+        </p>
+        {!setupRequired && (
+          <div className="alert error">
+            La configuration initiale est déjà terminée.{" "}
+            <Link to="/">Retour à la connexion</Link>
+          </div>
+        )}
+        <label>
+          Nom
+          <input
+            required
+            maxLength="120"
+            value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
+            placeholder="Votre nom"
+          />
+        </label>
+        <label>
+          Email
+          <input
+            type="email"
+            autoComplete="email"
+            required
+            value={form.email}
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
+            placeholder="vous@entreprise.fr"
+          />
+        </label>
+        <label>
+          Mot de passe
+          <input
+            type="password"
+            autoComplete="new-password"
+            minLength="12"
+            required
+            value={form.password}
+            onChange={(e) => setForm({ ...form, password: e.target.value })}
+            placeholder="12 caractères minimum"
+          />
+        </label>
+        <label>
+          Confirmer le mot de passe
+          <input
+            type="password"
+            autoComplete="new-password"
+            required
+            value={form.confirm}
+            onChange={(e) => setForm({ ...form, confirm: e.target.value })}
+            placeholder="Répétez le mot de passe"
+          />
+        </label>
+        {error && <div className="alert error">{error}</div>}
+        <button className="button blue" disabled={busy || !setupRequired}>
+          {busy
+            ? "Création…"
+            : "Créer le compte et ouvrir le tableau de bord"}
+        </button>
+        <Link className="auth-switch" to="/">
+          J’ai déjà un compte
+        </Link>
+      </form>
+      <div className="login-footer">ARCHIRANIN · ADMINISTRATION</div>
+    </main>
+  );
 }
+
 function Shell({ admin, onLogout }) {
   const [menu, setMenu] = useState(false);
-  const [demo, setDemo] = useState(() => Boolean(window.__ARCHIHOME_DEMO__));
-  useEffect(() => { const activate=()=>setDemo(true);window.addEventListener("archihome:demo",activate);return()=>window.removeEventListener("archihome:demo",activate); }, []);
+
   return (
     <div className="admin-shell">
       <aside className={`sidebar ${menu ? "open" : ""}`}>
@@ -132,11 +292,7 @@ function Shell({ admin, onLogout }) {
           ))}
         </nav>
         <div className="sidebar-bottom">
-          <a
-            href={import.meta.env.VITE_PUBLIC_URL || "/"}
-            target="_blank"
-            rel="noreferrer"
-          >
+          <a href={PUBLIC_SITE_URL} target="_blank" rel="noreferrer">
             <ArrowUpRight size={15} /> Voir le site
           </a>
           <button onClick={onLogout}>
@@ -171,7 +327,6 @@ function Shell({ admin, onLogout }) {
             <small>Administrateur</small>
           </div>
         </header>
-        {demo&&<div className="demo-banner">Mode démo local — données temporaires, non enregistrées dans MySQL.</div>}
         <div className="admin-content">
           <Routes>
             <Route path="/" element={<Dashboard />} />
@@ -200,16 +355,33 @@ function Shell({ admin, onLogout }) {
     </div>
   );
 }
+
 function App() {
   const [admin, setAdmin] = useState(null),
-    [checking, setChecking] = useState(true), [setupRequired,setSetupRequired]=useState(false);
-  const refresh = useCallback(
-    async () => {try{const d=await request(api.get("/auth/me"));setAdmin(d.admin)}catch{setAdmin(null);try{const status=await request(api.get("/auth/setup-status"));setSetupRequired(Boolean(status.required))}catch{setSetupRequired(false)}}finally{setChecking(false)}},
-    [],
-  );
+    [checking, setChecking] = useState(true),
+    [setupRequired, setSetupRequired] = useState(false);
+
+  const refresh = useCallback(async () => {
+    try {
+      const d = await request(api.get("/auth/me"));
+      setAdmin(d.admin);
+    } catch {
+      setAdmin(null);
+      try {
+        const status = await request(api.get("/auth/setup-status"));
+        setSetupRequired(Boolean(status.required));
+      } catch {
+        setSetupRequired(false);
+      }
+    } finally {
+      setChecking(false);
+    }
+  }, []);
+
   useEffect(() => {
     refresh();
   }, [refresh]);
+
   async function logout() {
     try {
       await request(api.post("/auth/logout"));
@@ -217,13 +389,24 @@ function App() {
       setAdmin(null);
     }
   }
+
   if (checking) return <div className="loading-screen">ArchiRanin</div>;
   return admin ? (
     <Shell admin={admin} onLogout={logout} />
   ) : (
-    <Routes><Route path="/setup" element={<Setup onCreated={setAdmin} setupRequired={setupRequired}/>} /><Route path="*" element={<SignIn onLogin={setAdmin} setupRequired={setupRequired}/>} /></Routes>
+    <Routes>
+      <Route
+        path="/setup"
+        element={<Setup onCreated={setAdmin} setupRequired={setupRequired} />}
+      />
+      <Route
+        path="*"
+        element={<SignIn onLogin={setAdmin} setupRequired={setupRequired} />}
+      />
+    </Routes>
   );
 }
+
 function useLoad(url, deps = []) {
   const [data, setData] = useState(null),
     [error, setError] = useState("");
@@ -242,6 +425,7 @@ function useLoad(url, deps = []) {
   }, [reload, ...deps]);
   return { data, error, reload, setData };
 }
+
 function PageHeading({ eyebrow, title, description, action }) {
   return (
     <div className="page-heading">
@@ -254,18 +438,22 @@ function PageHeading({ eyebrow, title, description, action }) {
     </div>
   );
 }
+
 function Dashboard() {
   const { data: stats, error: e } = useLoad("/admin/dashboard/stats"),
     { data: recent } = useLoad("/admin/dashboard/recent-projects"),
     { data: popular } = useLoad("/admin/dashboard/popular-projects"),
     { data: views } = useLoad("/admin/dashboard/views");
-  const viewMax = Math.max(1, ...(views || []).map((point) => Number(point.total)));
+  const viewMax = Math.max(
+    1,
+    ...(views || []).map((point) => Number(point.total)),
+  );
   return (
     <>
       <PageHeading
         eyebrow="VUE D’ENSEMBLE"
         title="Tableau de bord"
-        description="Bonjour, voici un aperçu de votre site."
+        description="Bonjour, voici un aperçu en temps réel de votre site."
       />
       <div className="metric-grid">
         {[
@@ -294,9 +482,31 @@ function Dashboard() {
           </div>
           <ProjectTable projects={recent || []} />
           <div className="views-chart-panel">
-            <div className="panel-heading"><h2>Visites des 7 derniers jours</h2></div>
-            <div className="views-chart">{(views || []).map((point) => <div className="view-column" key={String(point.date)}><b>{point.total}</b><i style={{height:`${Math.max(5,Number(point.total)/viewMax*100)}%`}}/><small>{new Date(point.date).toLocaleDateString('fr-FR',{weekday:'short'})}</small></div>)}</div>
-            {!views?.length&&<small className="chart-empty">Les visites apparaîtront ici.</small>}
+            <div className="panel-heading">
+              <h2>Visites des 7 derniers jours</h2>
+            </div>
+            <div className="views-chart">
+              {(views || []).map((point) => (
+                <div className="view-column" key={String(point.date)}>
+                  <b>{point.total}</b>
+                  <i
+                    style={{
+                      height: `${Math.max(5, (Number(point.total) / viewMax) * 100)}%`,
+                    }}
+                  />
+                  <small>
+                    {new Date(point.date).toLocaleDateString("fr-FR", {
+                      weekday: "short",
+                    })}
+                  </small>
+                </div>
+              ))}
+            </div>
+            {!views?.length && (
+              <small className="chart-empty">
+                Les visites apparaîtront ici.
+              </small>
+            )}
           </div>
         </section>
         <div className="dash-right">
@@ -336,6 +546,7 @@ function Dashboard() {
     </>
   );
 }
+
 function ProjectTable({ projects }) {
   return (
     <div className="table-scroll">
@@ -375,7 +586,7 @@ function ProjectTable({ projects }) {
                   <Pencil size={15} />
                 </Link>
                 <a
-                  href={`${import.meta.env.VITE_PUBLIC_URL || "http://localhost:5173"}/projects/${p.slug}`}
+                  href={`${PUBLIC_SITE_URL}/projects/${p.slug}`}
                   target="_blank"
                   rel="noreferrer"
                   aria-label="Voir"
@@ -395,6 +606,7 @@ function ProjectTable({ projects }) {
     </div>
   );
 }
+
 function Status({ value }) {
   return (
     <span className={`status ${value}`}>
@@ -406,9 +618,11 @@ function Status({ value }) {
     </span>
   );
 }
+
 function Projects() {
   const { data, error, reload } = useLoad("/admin/projects?limit=100");
   const [search, setSearch] = useState("");
+
   async function status(id, action) {
     try {
       await request(api.patch(`/admin/projects/${id}/${action}`));
@@ -417,6 +631,7 @@ function Projects() {
       alert(e.response?.data?.message || "Action impossible");
     }
   }
+
   async function remove(id) {
     if (!confirm("Supprimer définitivement ce projet et ses images/plans ?"))
       return;
@@ -427,9 +642,11 @@ function Projects() {
       alert(e.response?.data?.message || "Suppression impossible");
     }
   }
+
   const projects = (data?.projects || []).filter((p) =>
     p.title.toLowerCase().includes(search.toLowerCase()),
   );
+
   return (
     <>
       <PageHeading
@@ -487,10 +704,12 @@ function Projects() {
     </>
   );
 }
+
 function ProjectForm() {
   const nav = useNavigate();
-  const editing = location.pathname.includes("/edit"),
-    id = location.pathname.split("/").at(-2);
+  const { id } = useParams();
+  const editing = Boolean(id);
+
   const [form, setForm] = useState({
       title: "",
       shortDescription: "",
@@ -504,37 +723,90 @@ function ProjectForm() {
       bathrooms: 0,
       garage: false,
       location: "",
-      status: "draft",
+      status: "published",
     }),
     [categories, setCategories] = useState([]),
-    [images, setImages] = useState([]),
+    [existingImages, setExistingImages] = useState([]),
+    [newImages, setNewImages] = useState([]),
+    [existingPlans, setExistingPlans] = useState([]),
+    [newPlans, setNewPlans] = useState([]),
+    [existingModelUrl, setExistingModelUrl] = useState(null),
     [model, setModel] = useState(null),
-    [plans, setPlans] = useState([]),
     [busy, setBusy] = useState(false),
     [message, setMessage] = useState("");
+
+  const loadProject = useCallback(() => {
+    if (!editing) return;
+    request(api.get(`/admin/projects/${id}`))
+      .then((p) => {
+        setForm({
+          title: p.title || "",
+          shortDescription: p.shortDescription || "",
+          description: p.description || "",
+          categoryId: p.categoryId || "",
+          style: p.style || "",
+          surface: p.surface ?? "",
+          landSurface: p.landSurface ?? "",
+          floors: p.floors ?? 1,
+          bedrooms: p.bedrooms ?? 0,
+          bathrooms: p.bathrooms ?? 0,
+          garage: Boolean(p.garage),
+          location: p.location || "",
+          status: p.status || "draft",
+        });
+        setExistingImages(p.images || []);
+        setExistingPlans(p.plans || []);
+        setExistingModelUrl(p.model3dUrl || null);
+      })
+      .catch((e) =>
+        setMessage(e.response?.data?.message || "Projet introuvable."),
+      );
+  }, [id, editing]);
+
   useEffect(() => {
     request(api.get("/admin/categories"))
       .then(setCategories)
       .catch(() => {});
-    if (editing)
-      request(api.get(`/admin/projects/${id}`))
-        .then((p) => {
-          setForm({
-            ...p,
-            categoryId: p.categoryId || "",
-            surface: p.surface || "",
-            landSurface: p.landSurface || "",
-          });
-          setImages(p.images || []);
-        })
-        .catch((e) =>
-          setMessage(e.response?.data?.message || "Projet introuvable."),
-        );
-  }, [id, editing]);
+    loadProject();
+  }, [loadProject]);
+
   function change(e) {
     const { name, value, type, checked } = e.target;
     setForm((f) => ({ ...f, [name]: type === "checkbox" ? checked : value }));
   }
+
+  async function removeExistingImage(imgId) {
+    if (!confirm("Supprimer cette image de la galerie ?")) return;
+    try {
+      await request(api.delete(`/admin/images/${imgId}`));
+      setExistingImages((prev) => prev.filter((x) => x.id !== imgId));
+    } catch (e) {
+      alert(e.response?.data?.message || "Suppression de l'image impossible.");
+    }
+  }
+
+  async function removeExistingPlan(planId) {
+    if (!confirm("Supprimer ce plan 2D ?")) return;
+    try {
+      await request(api.delete(`/admin/plans/${planId}`));
+      setExistingPlans((prev) => prev.filter((x) => x.id !== planId));
+    } catch (e) {
+      alert(e.response?.data?.message || "Suppression du plan impossible.");
+    }
+  }
+
+  async function removeExistingModel() {
+    if (!confirm("Supprimer le modèle 3D associé à ce projet ?")) return;
+    try {
+      await request(api.delete(`/admin/projects/${id}/model`));
+      setExistingModelUrl(null);
+    } catch (e) {
+      alert(
+        e.response?.data?.message || "Suppression du modèle 3D impossible.",
+      );
+    }
+  }
+
   async function submit(e) {
     e.preventDefault();
     setBusy(true);
@@ -542,12 +814,18 @@ function ProjectForm() {
     try {
       const payload = {
         ...form,
-        categoryId: Number(form.categoryId),
-        surface: form.surface === "" ? null : Number(form.surface),
-        landSurface: form.landSurface === "" ? null : Number(form.landSurface),
-        floors: Number(form.floors),
-        bedrooms: Number(form.bedrooms),
-        bathrooms: Number(form.bathrooms),
+        categoryId: form.categoryId ? Number(form.categoryId) : null,
+        surface:
+          form.surface === "" || form.surface === null
+            ? null
+            : Number(form.surface),
+        landSurface:
+          form.landSurface === "" || form.landSurface === null
+            ? null
+            : Number(form.landSurface),
+        floors: Number(form.floors || 1),
+        bedrooms: Number(form.bedrooms || 0),
+        bathrooms: Number(form.bathrooms || 0),
       };
       const d = await request(
         editing
@@ -555,25 +833,29 @@ function ProjectForm() {
           : api.post("/admin/projects", payload),
       );
       const projectId = editing ? id : d.id;
-      if (model) {
+
+      if (model instanceof File) {
         const fd = new FormData();
         fd.append("model", model);
         await request(api.post(`/admin/projects/${projectId}/model`, fd));
       }
-      if (images.length && images[0] instanceof File) {
+      if (newImages.length > 0) {
         const fd = new FormData();
-        images
+        newImages
           .filter((x) => x instanceof File)
           .forEach((x) => fd.append("images", x));
         await request(api.post(`/admin/projects/${projectId}/images`, fd));
       }
-      if (plans.length) {
+      if (newPlans.length > 0) {
         const fd = new FormData();
-        plans.forEach((x) => fd.append("plans", x));
+        newPlans
+          .filter((x) => x instanceof File)
+          .forEach((x) => fd.append("plans", x));
         await request(api.post(`/admin/projects/${projectId}/plans`, fd));
       }
-      if (form.status === "published")
+      if (form.status === "published") {
         await request(api.patch(`/admin/projects/${projectId}/publish`));
+      }
       nav("/projects");
     } catch (e) {
       setMessage(
@@ -584,6 +866,7 @@ function ProjectForm() {
       setBusy(false);
     }
   }
+
   return (
     <>
       <PageHeading
@@ -720,6 +1003,7 @@ function ProjectForm() {
             </label>
           </div>
         </section>
+
         <section className="panel form-panel">
           <h2>Modèle 3D</h2>
           <FileDrop
@@ -728,34 +1012,130 @@ function ProjectForm() {
             files={model ? [model] : []}
             onChange={(x) => setModel(x[0] || null)}
           />
+          {existingModelUrl && (
+            <div
+              style={{
+                marginTop: "12px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: "12px",
+                padding: "10px 14px",
+                background: "rgba(0,0,0,0.03)",
+                borderRadius: "6px",
+              }}
+            >
+              <small style={{ wordBreak: "break-all" }}>
+                Modèle 3D actuel :{" "}
+                <a href={existingModelUrl} target="_blank" rel="noreferrer">
+                  {existingModelUrl.split("/").pop()}
+                </a>
+              </small>
+              <button
+                type="button"
+                className="danger-text"
+                onClick={removeExistingModel}
+              >
+                <Trash2 size={14} /> Supprimer
+              </button>
+            </div>
+          )}
         </section>
+
         <section className="panel form-panel">
           <h2>Plans 2D</h2>
           <FileDrop
             label="Ajouter des plans ou PDF"
             accept="image/png,image/jpeg,image/webp,application/pdf"
-            files={plans}
-            onChange={setPlans}
+            files={newPlans}
+            onChange={setNewPlans}
             multiple
           />
+          {existingPlans.length > 0 && (
+            <div
+              style={{
+                marginTop: "12px",
+                display: "flex",
+                flexDirection: "column",
+                gap: "8px",
+              }}
+            >
+              {existingPlans.map((pl) => (
+                <div
+                  key={pl.id}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    padding: "8px 12px",
+                    background: "rgba(0,0,0,0.03)",
+                    borderRadius: "6px",
+                  }}
+                >
+                  <a
+                    href={pl.pdfUrl || pl.imageUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{ fontSize: "13px", fontWeight: 500 }}
+                  >
+                    {pl.floorName || "Plan 2D"}
+                  </a>
+                  <button
+                    type="button"
+                    className="danger-text"
+                    onClick={() => removeExistingPlan(pl.id)}
+                  >
+                    <Trash2 size={14} /> Supprimer
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
+
         <section className="panel form-panel">
           <h2>Galerie du projet</h2>
           <FileDrop
             label="Ajouter des photos"
             accept="image/png,image/jpeg,image/webp"
-            files={images.filter((x) => x instanceof File)}
-            onChange={setImages}
+            files={newImages}
+            onChange={setNewImages}
             multiple
           />
-          <div className="existing-images">
-            {images
-              .filter((x) => !(x instanceof File))
-              .map((im) => (
-                <img key={im.id} src={im.imageUrl} alt={im.altText || ""} />
+          {existingImages.length > 0 && (
+            <div className="existing-images">
+              {existingImages.map((im) => (
+                <div
+                  key={im.id}
+                  style={{ position: "relative", display: "inline-block" }}
+                >
+                  <img src={im.imageUrl} alt={im.altText || ""} />
+                  <button
+                    type="button"
+                    onClick={() => removeExistingImage(im.id)}
+                    title="Supprimer cette image"
+                    style={{
+                      position: "absolute",
+                      top: "6px",
+                      right: "6px",
+                      background: "rgba(180, 28, 28, 0.9)",
+                      color: "#fff",
+                      border: 0,
+                      borderRadius: "4px",
+                      padding: "4px 6px",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                </div>
               ))}
-          </div>
+            </div>
+          )}
         </section>
+
         <section className="panel form-panel">
           <h2>Publication</h2>
           <label>
@@ -784,6 +1164,7 @@ function ProjectForm() {
     </>
   );
 }
+
 function FileDrop({ label, accept, files, onChange, multiple = false }) {
   return (
     <label className="file-drop">
@@ -803,17 +1184,21 @@ function FileDrop({ label, accept, files, onChange, multiple = false }) {
         }
       />
       {files.map((f, i) => (
-        <small key={i}>{f.name || `Image ${i + 1}`}</small>
+        <small key={i}>{f.name || `Fichier ${i + 1}`}</small>
       ))}
     </label>
   );
 }
+
 function Categories() {
   const { data, reload, error } = useLoad("/admin/categories");
   const [name, setName] = useState(""),
-    [description, setDescription] = useState("");
+    [description, setDescription] = useState(""),
+    [busy, setBusy] = useState(false);
+
   async function add(e) {
     e.preventDefault();
+    setBusy(true);
     try {
       await request(api.post("/admin/categories", { name, description }));
       setName("");
@@ -821,23 +1206,42 @@ function Categories() {
       reload();
     } catch (e) {
       alert(e.response?.data?.message || "Ajout impossible");
+    } finally {
+      setBusy(false);
     }
   }
+
   async function remove(id) {
-    if (!confirm("Désactiver cette catégorie ?")) return;
-    await request(api.delete(`/admin/categories/${id}`));
-    reload();
-  }
-  async function edit(category) {
-    const name = prompt("Nom de la catégorie", category.name)?.trim();
-    if (!name) return;
+    if (!confirm("Supprimer cette catégorie ?")) return;
     try {
-      await request(api.put(`/admin/categories/${category.id}`, { name, description: category.description }));
+      await request(api.delete(`/admin/categories/${id}`));
+      reload();
+    } catch (e) {
+      alert(e.response?.data?.message || "Suppression impossible");
+    }
+  }
+
+  async function edit(category) {
+    const newName = prompt("Nom de la catégorie", category.name)?.trim();
+    if (!newName) return;
+    const newDesc = prompt(
+      "Description de la catégorie",
+      category.description || "",
+    );
+    try {
+      await request(
+        api.put(`/admin/categories/${category.id}`, {
+          name: newName,
+          description:
+            newDesc !== null ? newDesc.trim() : category.description || "",
+        }),
+      );
       reload();
     } catch (e) {
       alert(e.response?.data?.message || "Modification impossible");
     }
   }
+
   return (
     <>
       <PageHeading
@@ -848,7 +1252,7 @@ function Categories() {
       <div className="two-panels">
         <section className="panel">
           <div className="panel-heading">
-            <h2>Catégories disponibles</h2>
+            <h2>Catégories disponibles ({data?.length || 0})</h2>
           </div>
           {error && <div className="alert error">{error}</div>}
           {data?.map((c) => (
@@ -857,9 +1261,17 @@ function Categories() {
                 <b>{c.name}</b>
                 <small>
                   {c.slug} · {c.isActive ? "Active" : "Inactive"}
+                  {c.description ? ` — ${c.description}` : ""}
                 </small>
               </span>
-              <div className="category-actions"><button onClick={() => edit(c)} aria-label="Modifier"><Pencil size={14} /></button><button onClick={() => remove(c.id)} aria-label="Désactiver"><Trash2 size={15} /></button></div>
+              <div className="category-actions">
+                <button onClick={() => edit(c)} aria-label="Modifier">
+                  <Pencil size={14} />
+                </button>
+                <button onClick={() => remove(c.id)} aria-label="Supprimer">
+                  <Trash2 size={15} />
+                </button>
+              </div>
             </div>
           ))}
         </section>
@@ -872,6 +1284,7 @@ function Categories() {
               minLength="2"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              placeholder="Ex: Architecture Commerciale"
             />
           </label>
           <label>
@@ -880,23 +1293,41 @@ function Categories() {
               rows="4"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
+              placeholder="Description courte de la catégorie"
             />
           </label>
-          <button className="button blue">
-            <Plus size={15} /> Ajouter
+          <button className="button blue" disabled={busy}>
+            <Plus size={15} /> {busy ? "Ajout…" : "Ajouter"}
           </button>
         </form>
       </div>
     </>
   );
 }
+
 function Messages() {
   const { data, reload, error } = useLoad("/admin/messages");
   const [active, setActive] = useState(null);
+
   async function update(id, action) {
-    await request(api.patch(`/admin/messages/${id}/${action}`));
-    reload();
+    try {
+      await request(api.patch(`/admin/messages/${id}/${action}`));
+      reload();
+    } catch (e) {
+      alert(e.response?.data?.message || "Mise à jour impossible.");
+    }
   }
+
+  async function remove(id) {
+    if (!confirm("Supprimer ce message définitivement ?")) return;
+    try {
+      await request(api.delete(`/admin/messages/${id}`));
+      reload();
+    } catch (e) {
+      alert(e.response?.data?.message || "Suppression impossible.");
+    }
+  }
+
   return (
     <>
       <PageHeading
@@ -924,7 +1355,7 @@ function Messages() {
                 className="message-main"
                 onClick={() => setActive(active === m.id ? null : m.id)}
               >
-                <span className="avatar">{m.name[0]}</span>
+                <span className="avatar">{m.name?.[0] || "?"}</span>
                 <span>
                   <b>{m.name}</b>
                   <small>
@@ -935,7 +1366,8 @@ function Messages() {
                     <p>
                       {m.message}
                       <br />
-                      <a href={`mailto:${m.email}`}>{m.email}</a> {m.phone}
+                      <a href={`mailto:${m.email}`}>{m.email}</a>{" "}
+                      {m.phone && `· ${m.phone}`}
                     </p>
                   )}
                 </span>
@@ -953,6 +1385,9 @@ function Messages() {
                 <button onClick={() => update(m.id, "archive")}>
                   Archiver
                 </button>
+                <button className="danger-text" onClick={() => remove(m.id)}>
+                  <Trash2 size={14} />
+                </button>
               </div>
             </article>
           ))}
@@ -962,11 +1397,11 @@ function Messages() {
     </>
   );
 }
+
 function AssetPage({ title, type }) {
   const { data, error } = useLoad("/admin/projects?limit=100");
-  const rows = (data?.projects || []).filter((p) =>
-    type === "models" ? p.model3dUrl : true,
-  );
+  const rows = data?.projects || [];
+
   return (
     <>
       <PageHeading
@@ -981,7 +1416,7 @@ function AssetPage({ title, type }) {
             <thead>
               <tr>
                 <th>Projet</th>
-                <th>Fichier</th>
+                <th>Contenu</th>
                 <th>État</th>
                 <th>Action</th>
               </tr>
@@ -990,13 +1425,27 @@ function AssetPage({ title, type }) {
               {rows.map((p) => (
                 <tr key={p.id}>
                   <td>{p.title}</td>
-                  <td>{type === "models" ? p.model3dUrl || "—" : p.title}</td>
                   <td>
                     {type === "models"
                       ? p.model3dUrl
-                        ? "Modèle ajouté"
+                        ? p.model3dUrl.split("/").pop()
+                        : "—"
+                      : type === "plans"
+                        ? `${p.plans?.length || 0} plan(s) 2D`
+                        : `${p.images?.length || 0} photo(s)`}
+                  </td>
+                  <td>
+                    {type === "models"
+                      ? p.model3dUrl
+                        ? "Modèle 3D actif"
                         : "Aucun modèle"
-                      : "Voir dans le projet"}
+                      : type === "plans"
+                        ? p.plans?.length
+                          ? "Plans disponibles"
+                          : "Aucun plan"
+                        : p.images?.length
+                          ? "Galerie active"
+                          : "Aucune photo"}
                   </td>
                   <td>
                     <Link to={`/projects/${p.id}/edit`}>
@@ -1007,29 +1456,40 @@ function AssetPage({ title, type }) {
               ))}
             </tbody>
           </table>
+          {rows.length === 0 && (
+            <div className="table-empty">Aucun projet enregistré.</div>
+          )}
         </div>
       </section>
     </>
   );
 }
+
 function SettingsPage() {
   const [form, setForm] = useState({}),
-    [msg, setMsg] = useState(""), [busy,setBusy]=useState(false);
+    [msg, setMsg] = useState(""),
+    [busy, setBusy] = useState(false);
+
   useEffect(() => {
     request(api.get("/admin/settings"))
       .then(setForm)
       .catch(() => {});
   }, []);
+
   async function save(e) {
     e.preventDefault();
-    setBusy(true);setMsg("");
+    setBusy(true);
+    setMsg("");
     try {
       await request(api.put("/admin/settings", form));
-      setMsg("Paramètres enregistrés.");
+      setMsg("Paramètres enregistrés avec succès.");
     } catch (e) {
-      setMsg(e.response?.data?.message || "Erreur.");
-    } finally { setBusy(false); }
+      setMsg(e.response?.data?.message || "Erreur lors de l'enregistrement.");
+    } finally {
+      setBusy(false);
+    }
   }
+
   return (
     <div className="settings-page">
       <PageHeading
@@ -1038,68 +1498,122 @@ function SettingsPage() {
         description="Coordonnées et liens affichés sur le site public."
       />
       <form className="panel settings-form" onSubmit={save}>
-        <div className="settings-form-heading"><div><span className="eyebrow">INFORMATIONS PUBLIQUES</span><h2>Coordonnées de l’entreprise</h2><p>Ces informations sont utilisées sur les pages publiques et les messages.</p></div><span className="settings-form-mark"><Settings size={19}/></span></div>
+        <div className="settings-form-heading">
+          <div>
+            <span className="eyebrow">INFORMATIONS PUBLIQUES</span>
+            <h2>Coordonnées de l’entreprise</h2>
+            <p>
+              Ces informations sont utilisées sur les pages publiques et les
+              messages.
+            </p>
+          </div>
+          <span className="settings-form-mark">
+            <Settings size={19} />
+          </span>
+        </div>
         <div className="settings-fields">
-        <label className="settings-field">
-          <span>Nom du site</span>
-          <input
-            placeholder="ArchiRanin"
-            required
-            value={form.site_name || ""}
-            onChange={(e) => setForm({ ...form, site_name: e.target.value })}
-          />
-        </label>
-        <label className="settings-field">
-          <span>Email de contact</span>
-          <input
-            type="email"
-            placeholder="sahnounranine8@gmail.com"
-            value={form.company_email || ""}
-            onChange={(e) =>
-              setForm({ ...form, company_email: e.target.value })
-            }
-          />
-        </label>
-        <label className="settings-field">
-          <span>Téléphone</span>
-          <input
-            type="tel"
-            placeholder="+33 1 23 45 67 89"
-            value={form.company_phone || ""}
-            onChange={(e) =>
-              setForm({ ...form, company_phone: e.target.value })
-            }
-          />
-        </label>
-        <label className="settings-field settings-field-wide">
-          <span>Adresse</span>
-          <input
-            placeholder="Adresse, ville, code postal"
-            value={form.company_address || ""}
-            onChange={(e) =>
-              setForm({ ...form, company_address: e.target.value })
-            }
-          />
-        </label>
-        <label className="settings-field">
-          <span>LinkedIn</span>
-          <input type="url" placeholder="https://www.linkedin.com/company/..." value={form.linkedin_url || ""} onChange={(e) => setForm({ ...form, linkedin_url: e.target.value })} />
-        </label>
-        <label className="settings-field">
-          <span>Instagram</span>
-          <input type="url" placeholder="https://www.instagram.com/..." value={form.instagram_url || ""} onChange={(e) => setForm({ ...form, instagram_url: e.target.value })} />
-        </label>
-        <label className="settings-field settings-field-wide">
-          <span>Facebook</span>
-          <input type="url" placeholder="https://www.facebook.com/..." value={form.facebook_url || ""} onChange={(e) => setForm({ ...form, facebook_url: e.target.value })} />
-        </label>
+          <label className="settings-field">
+            <span>Nom du site</span>
+            <input
+              placeholder="ArchiRanin"
+              required
+              value={form.site_name || ""}
+              onChange={(e) => setForm({ ...form, site_name: e.target.value })}
+            />
+          </label>
+          <label className="settings-field">
+            <span>Email de contact</span>
+            <input
+              type="email"
+              placeholder="sahnounranine8@gmail.com"
+              value={form.company_email || ""}
+              onChange={(e) =>
+                setForm({ ...form, company_email: e.target.value })
+              }
+            />
+          </label>
+          <label className="settings-field">
+            <span>Téléphone</span>
+            <input
+              type="tel"
+              placeholder="+216 46 412 009"
+              value={form.company_phone || ""}
+              onChange={(e) =>
+                setForm({ ...form, company_phone: e.target.value })
+              }
+            />
+          </label>
+          <label className="settings-field">
+            <span>Numéro WhatsApp</span>
+            <input
+              type="tel"
+              placeholder="+21646412009"
+              value={form.whatsapp_number || ""}
+              onChange={(e) =>
+                setForm({ ...form, whatsapp_number: e.target.value })
+              }
+            />
+          </label>
+          <label className="settings-field settings-field-wide">
+            <span>Adresse</span>
+            <input
+              placeholder="Tunis, Tunisie"
+              value={form.company_address || ""}
+              onChange={(e) =>
+                setForm({ ...form, company_address: e.target.value })
+              }
+            />
+          </label>
+          <label className="settings-field">
+            <span>LinkedIn</span>
+            <input
+              type="url"
+              placeholder="https://www.linkedin.com/in/..."
+              value={form.linkedin_url || ""}
+              onChange={(e) =>
+                setForm({ ...form, linkedin_url: e.target.value })
+              }
+            />
+          </label>
+          <label className="settings-field">
+            <span>Instagram</span>
+            <input
+              type="url"
+              placeholder="https://www.instagram.com/..."
+              value={form.instagram_url || ""}
+              onChange={(e) =>
+                setForm({ ...form, instagram_url: e.target.value })
+              }
+            />
+          </label>
+          <label className="settings-field settings-field-wide">
+            <span>Facebook</span>
+            <input
+              type="url"
+              placeholder="https://www.facebook.com/..."
+              value={form.facebook_url || ""}
+              onChange={(e) =>
+                setForm({ ...form, facebook_url: e.target.value })
+              }
+            />
+          </label>
         </div>
         <div className="settings-form-footer">
-          {msg && <p className={`settings-feedback ${msg.includes("enregistr") ? "success" : "error"}`}>{msg}</p>}
-          <button disabled={busy} className="button blue"><CheckCircle2 size={15}/>{busy ? "Enregistrement…" : "Enregistrer les paramètres"}</button>
+          {msg && (
+            <p
+              className={`settings-feedback ${msg.includes("enregistr") ? "success" : "error"}`}
+            >
+              {msg}
+            </p>
+          )}
+          <button disabled={busy} className="button blue">
+            <CheckCircle2 size={15} />
+            {busy ? "Enregistrement…" : "Enregistrer les paramètres"}
+          </button>
         </div>
       </form>
     </div>
   );
 }
+
 export default App;
