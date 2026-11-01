@@ -10,6 +10,14 @@ import "./demo.css";
 import "./polish.css";
 import "./settings.css";
 
+const savedPath = sessionStorage.getItem("archiranin_admin_path");
+if (savedPath && savedPath.startsWith("/admin")) {
+  sessionStorage.removeItem("archiranin_admin_path");
+  window.history.replaceState(null, "", savedPath);
+} else if (window.location.pathname.endsWith("/admin/index.html")) {
+  window.history.replaceState(null, "", "/admin/");
+}
+
 const basename = window.location.pathname.startsWith("/admin") ? "/admin" : "/";
 
 createRoot(document.getElementById("root")).render(

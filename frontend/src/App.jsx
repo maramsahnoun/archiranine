@@ -1147,6 +1147,19 @@ function NotFound() {
   );
 }
 
+function AdminRedirect() {
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(
+        "archiranin_admin_path",
+        window.location.pathname + window.location.search
+      );
+    } catch {}
+    window.location.replace("/admin/index.html");
+  }, []);
+  return <Loading />;
+}
+
 export default function App() {
   const [settings, setSettings] = useState({
     siteName: "ArchiRanin",
@@ -1235,6 +1248,8 @@ export default function App() {
           />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact settings={settings} />} />
+          <Route path="/admin" element={<AdminRedirect />} />
+          <Route path="/admin/*" element={<AdminRedirect />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>

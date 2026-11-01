@@ -486,6 +486,7 @@ export const api = {
       const data = await handleGet(url, options);
       return { data: { success: true, data }, status: 200 };
     } catch (err) {
+      if (url.includes("/auth/")) throw err;
       console.warn("Supabase admin GET error:", err);
       const fallback = demoApi({ method: "get", url, ...options });
       if (fallback !== undefined) return { data: { success: true, data: fallback }, status: 200 };
@@ -498,6 +499,7 @@ export const api = {
       const data = await handlePost(url, body);
       return { data: { success: true, data }, status: 200 };
     } catch (err) {
+      if (url.includes("/auth/")) throw err;
       console.warn("Supabase admin POST error:", err);
       const fallback = demoApi({ method: "post", url, data: body, ...options });
       if (fallback !== undefined) return { data: { success: true, data: fallback }, status: 200 };

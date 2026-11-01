@@ -193,6 +193,7 @@ function Shell({ admin, onLogout }) {
               element={<AssetPage type="gallery" title="Galerie" />}
             />
             <Route path="/settings" element={<SettingsPage />} />
+            <Route path="*" element={<Dashboard />} />
           </Routes>
         </div>
       </div>
